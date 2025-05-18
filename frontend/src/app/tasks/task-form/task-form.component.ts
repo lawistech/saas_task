@@ -17,6 +17,7 @@ import { ColumnConfig } from '../../models/column-config';
 })
 export class TaskFormComponent implements OnInit {
   @Input() task: Task | null = null;
+  @Input() projectId: number | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
@@ -76,6 +77,9 @@ export class TaskFormComponent implements OnInit {
       if (this.task.custom_fields) {
         this.customFieldKeys = Object.keys(this.task.custom_fields);
       }
+    } else if (this.projectId) {
+      // If creating a new task from project details page, pre-select the project
+      this.formData.project_id = this.projectId;
     }
   }
 

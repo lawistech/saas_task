@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Project } from '../../models/project';
 import { ProjectService } from '../../services/project.service';
 import { PROJECT_DEFAULT_COLUMNS } from '../../models/project-column-config';
@@ -34,7 +35,10 @@ export class ProjectListComponent implements OnInit, OnChanges {
 
   private readonly STORAGE_KEY = 'project_table_columns';
 
-  constructor(private projectService: ProjectService) {}
+  constructor(
+    private projectService: ProjectService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadColumnSettings();
@@ -231,11 +235,15 @@ export class ProjectListComponent implements OnInit, OnChanges {
   }
 
   toggleProjectDetails(project: Project): void {
-    if (this.selectedProject && this.selectedProject.id === project.id) {
-      this.selectedProject = null;
-    } else {
-      this.selectedProject = project;
+    // Navigate to project details page
+    this.router.navigate(['/projects', project.id]);
+  }
+
+  viewProjectDetails(project: Project, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
     }
+    this.router.navigate(['/projects', project.id]);
   }
 
   onEditProject(project: Project, event?: Event): void {

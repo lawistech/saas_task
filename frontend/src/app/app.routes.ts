@@ -6,6 +6,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { LayoutComponent } from './layout/layout.component';
 import { TasksComponent } from './tasks/tasks.component';
 import { ProjectsComponent } from './projects/projects.component';
+import { ProjectDetailsComponent } from './projects/project-details/project-details.component';
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
@@ -20,7 +21,8 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'profile', component: ProfileComponent },
       { path: 'tasks', component: TasksComponent },
-      { path: 'projects', component: ProjectsComponent }
+      { path: 'projects', component: ProjectsComponent },
+      { path: 'projects/:id', component: ProjectDetailsComponent }
     ]
   },
   { path: '**', redirectTo: '/login' }

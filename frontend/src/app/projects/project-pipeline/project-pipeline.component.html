@@ -21,8 +21,9 @@
              (dragend)="onDragEnd()">
 
           <div class="project-header">
-            <div class="project-title">{{ project.name }}</div>
+            <div class="project-title" (click)="viewProjectDetails(project)">{{ project.name }}</div>
             <div class="project-actions">
+              <button class="action-btn view-btn" (click)="viewProjectDetails(project)">👁️</button>
               <button class="action-btn edit-btn" (click)="onEditProject(project)">✏️</button>
               <button class="action-btn delete-btn" (click)="onDeleteProject(project.id)">🗑️</button>
             </div>

@@ -1,0 +1,165 @@
+<div class="project-details-container">
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    <div class="spinner"></div>
+    <p>Loading project details...</p>
+  </div>
+
+  <div *ngIf="!isLoading && project" class="project-content">
+    <!-- Header with back button and project name -->
+    <div class="project-header">
+      <div class="header-left">
+        <button class="back-btn" [routerLink]="['/projects']">
+          <i class="icon">←</i> Back to Projects
+        </button>
+        <h1>{{ project.name }}</h1>
+      </div>
+      <div class="header-right">
+        <div class="status-badge" [ngClass]="getStatusClass(project.status)">
+          {{ getStatusLabel(project.status) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Project Overview -->
+    <div class="project-overview">
+      <div class="overview-section">
+        <h2>Project Overview</h2>
+        <div class="overview-grid">
+          <div class="overview-item">
+            <span class="item-label">Description</span>
+            <span class="item-value">{{ project.description || 'No description provided' }}</span>
+          </div>
+          <div class="overview-item">
+            <span class="item-label">Client</span>
+            <span class="item-value">{{ project.client_name || 'Not specified' }}</span>
+          </div>
+          <div class="overview-item">
+            <span class="item-label">Client Email</span>
+            <span class="item-value">{{ project.client_email || 'Not specified' }}</span>
+          </div>
+          <div class="overview-item">
+            <span class="item-label">Budget</span>
+            <span class="item-value">{{ formatCurrency(project.budget) }}</span>
+          </div>
+          <div class="overview-item">
+            <span class="item-label">Start Date</span>
+            <span class="item-value">{{ formatDate(project.start_date) }}</span>
+          </div>
+          <div class="overview-item">
+            <span class="item-label">End Date</span>
+            <span class="item-value">{{ formatDate(project.end_date) }}</span>
+          </div>
+
+          <!-- Custom Fields -->
+          <ng-container *ngIf="project.custom_fields">
+            <div class="overview-item" *ngFor="let field of project.custom_fields | keyvalue">
+              <span class="item-label">{{ field.key }}</span>
+              <span class="item-value">{{ field.value || 'Not specified' }}</span>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Project Statistics -->
+      <div class="stats-section">
+        <h2>Project Statistics</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">{{ taskCounts.total }}</div>
+            <div class="stat-label">Total Tasks</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ taskCounts.pending }}</div>
+            <div class="stat-label">To Do</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ taskCounts.in_progress }}</div>
+            <div class="stat-label">In Progress</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ taskCounts.completed }}</div>
+            <div class="stat-label">Completed</div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+          <div class="progress-label">
+            <span>Project Completion</span>
+            <span>{{ getCompletionPercentage() }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getCompletionPercentage()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks Section -->
+    <div class="tasks-section">
+      <div class="tasks-header">
+        <h2>Project Tasks</h2>
+        <div class="tasks-controls">
+          <div class="view-toggle">
+            <button
+              class="view-btn"
+              [class.active]="viewMode === 'list'"
+              (click)="switchView('list')">
+              <i class="icon">📋</i> List View
+            </button>
+            <button
+              class="view-btn"
+              [class.active]="viewMode === 'pipeline'"
+              (click)="switchView('pipeline')">
+              <i class="icon">📊</i> Pipeline View
+            </button>
+          </div>
+          <button class="add-task-btn" (click)="openTaskForm()">
+            <i class="icon">➕</i> Add Task
+          </button>
+        </div>
+      </div>
+
+      <!-- Task List View -->
+      <app-task-list
+        *ngIf="viewMode === 'list'"
+        [tasks]="tasks"
+        (editTask)="openTaskForm($event)"
+        (deleteTask)="onTaskDeleted($event)"
+        (taskStatusChanged)="onTaskStatusChanged($event)">
+      </app-task-list>
+
+      <!-- Task Pipeline View -->
+      <app-task-pipeline
+        *ngIf="viewMode === 'pipeline'"
+        [tasks]="tasks"
+        (editTask)="openTaskForm($event)"
+        (deleteTask)="onTaskDeleted($event)"
+        (taskStatusChanged)="onTaskStatusChanged($event)">
+      </app-task-pipeline>
+
+      <div *ngIf="tasks.length === 0" class="no-tasks">
+        <p>No tasks found for this project. Create a new task to get started!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Form -->
+  <app-task-form
+    *ngIf="showTaskForm"
+    [task]="selectedTask"
+    [projectId]="projectId"
+    (close)="closeTaskForm()"
+    (saved)="onTaskSaved()">
+  </app-task-form>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && !project" class="error-state">
+    <h2>Project Not Found</h2>
+    <p>The project you're looking for doesn't exist or you don't have permission to view it.</p>
+    <button class="back-btn" [routerLink]="['/projects']">
+      <i class="icon">←</i> Back to Projects
+    </button>
+  </div>
+</div>

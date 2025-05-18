@@ -180,10 +180,13 @@
 
         <!-- Actions column -->
         <td *ngIf="isColumnVisible('actions')" class="actions-column" (click)="$event.stopPropagation()">
-          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)">
+          <button class="action-btn view-btn" (click)="viewProjectDetails(project, $event)" title="View Details">
+            👁️
+          </button>
+          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)" title="Edit Project">
             ✏️
           </button>
-          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)">
+          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)" title="Delete Project">
             🗑️
           </button>
         </td>
@@ -228,10 +231,13 @@
           </td>
         </ng-container>
         <td *ngIf="isColumnVisible('actions')" class="actions-column" (click)="$event.stopPropagation()">
-          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)">
+          <button class="action-btn view-btn" (click)="viewProjectDetails(project, $event)" title="View Details">
+            👁️
+          </button>
+          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)" title="Edit Project">
             ✏️
           </button>
-          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)">
+          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)" title="Delete Project">
             🗑️
           </button>
         </td>
@@ -276,10 +282,13 @@
           </td>
         </ng-container>
         <td *ngIf="isColumnVisible('actions')" class="actions-column" (click)="$event.stopPropagation()">
-          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)">
+          <button class="action-btn view-btn" (click)="viewProjectDetails(project, $event)" title="View Details">
+            👁️
+          </button>
+          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)" title="Edit Project">
             ✏️
           </button>
-          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)">
+          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)" title="Delete Project">
             🗑️
           </button>
         </td>
@@ -324,10 +333,13 @@
           </td>
         </ng-container>
         <td *ngIf="isColumnVisible('actions')" class="actions-column" (click)="$event.stopPropagation()">
-          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)">
+          <button class="action-btn view-btn" (click)="viewProjectDetails(project, $event)" title="View Details">
+            👁️
+          </button>
+          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)" title="Edit Project">
             ✏️
           </button>
-          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)">
+          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)" title="Delete Project">
             🗑️
           </button>
         </td>

@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { Project } from '../../models/project';
 import { ProjectService } from '../../services/project.service';
 
@@ -27,7 +28,10 @@ export class ProjectPipelineComponent implements OnInit, OnChanges {
   statusOrder: string[] = ['active', 'on_hold', 'completed', 'cancelled'];
   draggedProject: Project | null = null;
 
-  constructor(private projectService: ProjectService) {}
+  constructor(
+    private projectService: ProjectService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.groupProjectsByStatus();
@@ -55,6 +59,10 @@ export class ProjectPipelineComponent implements OnInit, OnChanges {
       }
       this.groupedProjects[status].push(project);
     });
+  }
+
+  viewProjectDetails(project: Project): void {
+    this.router.navigate(['/projects', project.id]);
   }
 
   onEditProject(project: Project): void {
