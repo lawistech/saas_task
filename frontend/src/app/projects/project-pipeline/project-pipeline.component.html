@@ -1,0 +1,61 @@
+<div class="pipeline-container">
+  <h1 class="pipeline-title">Project Pipeline</h1>
+
+  <div class="pipeline-board">
+    <div *ngFor="let status of statusOrder"
+         class="pipeline-column"
+         [ngClass]="getStatusClass(status)"
+         (dragover)="onDragOver($event, status)"
+         (drop)="onDrop($event, status)">
+
+      <div class="column-header">
+        <h2>{{ statusLabels[status] }}</h2>
+        <span class="project-count">{{ groupedProjects[status].length }}</span>
+      </div>
+
+      <div class="project-cards">
+        <div *ngFor="let project of groupedProjects[status]"
+             class="project-card"
+             draggable="true"
+             (dragstart)="onDragStart($event, project)"
+             (dragend)="onDragEnd()">
+
+          <div class="project-header">
+            <div class="project-title">{{ project.name }}</div>
+            <div class="project-actions">
+              <button class="action-btn edit-btn" (click)="onEditProject(project)">✏️</button>
+              <button class="action-btn delete-btn" (click)="onDeleteProject(project.id)">🗑️</button>
+            </div>
+          </div>
+
+          <div class="project-details">
+            <div class="detail-item" *ngIf="project.client_name">
+              <span class="detail-label">Client:</span>
+              <span class="detail-value">{{ project.client_name }}</span>
+            </div>
+            <div class="detail-item" *ngIf="project.budget">
+              <span class="detail-label">Budget:</span>
+              <span class="detail-value">{{ formatCurrency(project.budget) }}</span>
+            </div>
+            <div class="detail-item" *ngIf="project.start_date">
+              <span class="detail-label">Start:</span>
+              <span class="detail-value">{{ formatDate(project.start_date) }}</span>
+            </div>
+            <div class="detail-item" *ngIf="project.end_date">
+              <span class="detail-label">End:</span>
+              <span class="detail-value">{{ formatDate(project.end_date) }}</span>
+            </div>
+          </div>
+
+          <div class="project-description" *ngIf="project.description">
+            {{ project.description }}
+          </div>
+        </div>
+
+        <div *ngIf="groupedProjects[status].length === 0" class="empty-column-message">
+          No projects in this status
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

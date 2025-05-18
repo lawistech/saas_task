@@ -1,0 +1,140 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <h1>User Profile</h1>
+    <button (click)="toggleEdit()" class="edit-btn">
+      {{ isEditing ? 'Cancel' : 'Edit Profile' }}
+    </button>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+
+  <div class="profile-content" *ngIf="user">
+    <div class="profile-picture-section">
+      <div class="profile-picture">
+        <img
+          [src]="user.profile_picture ? user.profile_picture : 'assets/default-avatar.svg'"
+          alt="Profile Picture"
+          (error)="handleImageError($event)"
+        >
+      </div>
+
+      <div class="upload-section">
+        <div *ngIf="!selectedFile">
+          <label for="profile-picture" class="upload-btn">Change Picture</label>
+          <input
+            type="file"
+            id="profile-picture"
+            (change)="onFileSelected($event)"
+            accept="image/*"
+            style="display: none;"
+          >
+        </div>
+
+        <div *ngIf="selectedFile" class="preview-container">
+          <div class="image-preview">
+            <img [src]="imagePreview" alt="Preview" (error)="handleImageError($event)">
+          </div>
+          <div class="preview-actions">
+            <button (click)="uploadImage()" [disabled]="isUploading" class="upload-confirm-btn">
+              {{ isUploading ? 'Uploading...' : 'Upload' }}
+            </button>
+            <button (click)="cancelUpload()" class="cancel-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-details">
+      <div *ngIf="!isEditing">
+        <div class="detail-item">
+          <span class="label">Name:</span>
+          <span class="value">{{ user.name }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Email:</span>
+          <span class="value">{{ user.email }}</span>
+        </div>
+        <div class="detail-item" *ngIf="user.bio">
+          <span class="label">Bio:</span>
+          <span class="value">{{ user.bio }}</span>
+        </div>
+        <div class="detail-item" *ngIf="user.phone">
+          <span class="label">Phone:</span>
+          <span class="value">{{ user.phone }}</span>
+        </div>
+        <div class="detail-item" *ngIf="user.address">
+          <span class="label">Address:</span>
+          <span class="value">{{ user.address }}</span>
+        </div>
+      </div>
+
+      <form *ngIf="isEditing" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            [(ngModel)]="profileForm.name"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            [(ngModel)]="profileForm.email"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Bio</label>
+          <textarea
+            id="bio"
+            name="bio"
+            [(ngModel)]="profileForm.bio"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            [(ngModel)]="profileForm.phone"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="address">Address</label>
+          <textarea
+            id="address"
+            name="address"
+            [(ngModel)]="profileForm.address"
+            rows="2"
+          ></textarea>
+        </div>
+
+        <button type="submit" [disabled]="isSaving" class="save-btn">
+          {{ isSaving ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="back-link">
+    <a routerLink="/dashboard">Back to Dashboard</a>
+  </div>
+</div>

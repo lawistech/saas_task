@@ -1,0 +1,80 @@
+<div class="pipeline-container">
+  <h1 class="pipeline-title">Project pipeline</h1>
+
+  <div class="pipeline-board">
+    <div *ngFor="let status of statusOrder"
+         class="pipeline-column"
+         [ngClass]="getStatusClass(status)"
+         (dragover)="onDragOver($event, status)"
+         (drop)="onDrop($event, status)">
+
+      <div class="column-header">
+        <h2>{{ statusLabels[status] }}</h2>
+      </div>
+
+      <div class="task-cards">
+        <div *ngFor="let task of groupedTasks[status]"
+             class="task-card"
+             draggable="true"
+             (dragstart)="onDragStart($event, task)"
+             (dragend)="onDragEnd()">
+
+          <div class="task-header">
+            <div class="task-title">{{ task.title }}</div>
+          </div>
+
+          <div class="task-details">
+            <div class="detail-row">
+              <div class="detail-label">Owner</div>
+              <div class="detail-value">
+                <div class="assignee-info" *ngIf="task.assignee">
+                  <span class="assignee-avatar" *ngIf="!task.assignee.profile_picture">
+                    {{ task.assignee.name.charAt(0) }}
+                  </span>
+                  <span class="assignee-avatar" *ngIf="task.assignee.profile_picture">
+                    <img [src]="task.assignee.profile_picture" alt="Profile">
+                  </span>
+                </div>
+                <span *ngIf="!task.assignee">Unassigned</span>
+              </div>
+            </div>
+
+            <div class="detail-row">
+              <div class="detail-label">Stage</div>
+              <div class="detail-value">
+                <span class="stage-badge" [ngClass]="getStageClass(task.stage || '')">
+                  {{ task.stage || 'Not set' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="detail-row">
+              <div class="detail-label">Priority</div>
+              <div class="detail-value">
+                <span class="priority-badge" [ngClass]="getPriorityClass(task.priority)">
+                  {{ task.priority | titlecase }}
+                </span>
+              </div>
+            </div>
+
+
+          </div>
+
+          <div class="task-actions">
+            <button class="action-btn edit-btn" (click)="onEditTask(task)">
+              ✏️
+            </button>
+            <button class="action-btn delete-btn" (click)="onDeleteTask(task.id)">
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty state for column -->
+        <div *ngIf="groupedTasks[status].length === 0" class="empty-column">
+          <p>No tasks in this column</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,82 @@
+<div class="task-item" [class.expanded]="isExpanded">
+  <div class="task-header" (click)="toggleExpand()">
+    <div class="task-info">
+      <div class="task-title-row">
+        <h3 class="task-title">{{ task.title }}</h3>
+        <div class="task-badges">
+          <span class="status-badge" [ngClass]="getStatusClass()">
+            {{ task.status.replace('_', ' ') | titlecase }}
+          </span>
+          <span class="priority-badge" [ngClass]="getPriorityClass()">
+            {{ task.priority | titlecase }}
+          </span>
+        </div>
+      </div>
+      <div class="task-meta">
+        <span class="due-date">Due: {{ formatDate(task.due_date) }}</span>
+      </div>
+    </div>
+    <div class="task-actions">
+      <button class="action-btn edit-btn" (click)="onEdit(); $event.stopPropagation()">
+        ✏️
+      </button>
+      <button class="action-btn delete-btn" [disabled]="isDeleting" (click)="onDelete(); $event.stopPropagation()">
+        🗑️
+      </button>
+    </div>
+  </div>
+
+  <div class="task-details" *ngIf="isExpanded">
+    <p class="task-description">{{ task.description || 'No description provided.' }}</p>
+
+    <!-- Assignee info -->
+    <div class="task-detail-row" *ngIf="task.assignee">
+      <span class="detail-label">Assignee:</span>
+      <span class="detail-value">
+        <span class="assignee-info">
+          <span class="assignee-avatar" *ngIf="task.assignee.profile_picture">
+            <img [src]="task.assignee.profile_picture" alt="Profile">
+          </span>
+          <span class="assignee-avatar" *ngIf="!task.assignee.profile_picture">
+            {{ task.assignee.name.charAt(0) }}
+          </span>
+          {{ task.assignee.name }}
+        </span>
+      </span>
+    </div>
+
+
+
+    <!-- Custom fields -->
+    <div class="task-detail-row" *ngIf="task.custom_fields && getCustomFieldsKeys().length > 0">
+      <span class="detail-label">Custom Fields:</span>
+      <div class="custom-fields-list">
+        <div class="custom-field-item" *ngFor="let key of getCustomFieldsKeys()">
+          <span class="custom-field-key">{{ key }}:</span>
+          <span class="custom-field-value">{{ task.custom_fields![key] }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-actions">
+      <button
+        class="status-btn pending-btn"
+        [class.active]="task.status === 'pending'"
+        (click)="updateStatus('pending')">
+        Pending
+      </button>
+      <button
+        class="status-btn progress-btn"
+        [class.active]="task.status === 'in_progress'"
+        (click)="updateStatus('in_progress')">
+        In Progress
+      </button>
+      <button
+        class="status-btn completed-btn"
+        [class.active]="task.status === 'completed'"
+        (click)="updateStatus('completed')">
+        Completed
+      </button>
+    </div>
+  </div>
+</div>

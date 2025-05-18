@@ -1,0 +1,337 @@
+<div class="project-table-container">
+  <div class="table-controls">
+    <button class="column-settings-btn" (click)="toggleColumnSettings()">
+      <span class="settings-icon">⚙️</span> Column Settings
+    </button>
+
+    <!-- Column Settings Dropdown -->
+    <div class="column-settings-dropdown" *ngIf="showColumnSettings">
+      <div class="dropdown-header">
+        <h3>Column Settings</h3>
+        <button class="close-btn" (click)="toggleColumnSettings()">✕</button>
+      </div>
+
+      <div class="dropdown-content">
+        <div class="settings-section">
+          <h4>Visible Columns</h4>
+          <p class="settings-hint">Check columns to show/hide. Drag to reorder.</p>
+
+          <div class="column-list">
+            <div *ngFor="let column of columns"
+                 class="column-item"
+                 draggable="true"
+                 (dragstart)="onDragStart($event, column)"
+                 (dragover)="onDragOver($event, column)"
+                 (dragend)="onDragEnd()">
+
+              <div class="column-checkbox">
+                <input type="checkbox"
+                       [id]="'col-' + column.id"
+                       [checked]="column.visible"
+                       (change)="toggleColumnVisibility(column)">
+              </div>
+
+              <label [for]="'col-' + column.id" class="column-label">
+                <span class="drag-handle">⋮⋮</span>
+                {{ column.name }}
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Column Form -->
+  <div class="add-column-form" *ngIf="showAddColumnForm">
+    <div class="form-header">
+      <h3>Add New Column</h3>
+      <button class="close-btn" (click)="toggleAddColumnForm()">✕</button>
+    </div>
+    <div class="form-content">
+      <div class="form-group">
+        <label for="column-name">Column Name:</label>
+        <input type="text" id="column-name" [(ngModel)]="newColumnName" placeholder="Enter column name">
+      </div>
+      <div class="form-actions">
+        <button class="cancel-btn" (click)="toggleAddColumnForm()">Cancel</button>
+        <button class="add-btn" (click)="addCustomColumn()">Add Column</button>
+      </div>
+    </div>
+  </div>
+
+  <table class="project-table">
+    <thead>
+      <tr>
+        <!-- Dynamically generate columns based on visibility and order -->
+        <th *ngIf="isColumnVisible('checkbox')" class="checkbox-column">
+          <input type="checkbox" (change)="toggleSelectAll($event)">
+        </th>
+
+        <th *ngIf="isColumnVisible('name')" class="name-column" (click)="sortProjects('name')">
+          Project Name
+          <span class="sort-icon" *ngIf="sortField === 'name'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('status')" class="status-column" (click)="sortProjects('status')">
+          Status
+          <span class="sort-icon" *ngIf="sortField === 'status'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('client')" class="client-column" (click)="sortProjects('client_name')">
+          Client
+          <span class="sort-icon" *ngIf="sortField === 'client_name'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('budget')" class="budget-column" (click)="sortProjects('budget')">
+          Budget
+          <span class="sort-icon" *ngIf="sortField === 'budget'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('start_date')" class="date-column" (click)="sortProjects('start_date')">
+          Start Date
+          <span class="sort-icon" *ngIf="sortField === 'start_date'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('end_date')" class="date-column" (click)="sortProjects('end_date')">
+          End Date
+          <span class="sort-icon" *ngIf="sortField === 'end_date'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <!-- Custom columns -->
+        <ng-container *ngFor="let column of getVisibleColumns()">
+          <th *ngIf="column.id.startsWith('custom_')" class="custom-column">
+            {{ column.name }}
+          </th>
+        </ng-container>
+
+        <th *ngIf="isColumnVisible('actions')" class="actions-column">
+          <button class="add-column-btn" (click)="toggleAddColumnForm()">+</button>
+        </th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <!-- Active Projects -->
+      <tr class="group-header">
+        <td [attr.colspan]="getVisibleColumnsCount()">Active Projects</td>
+      </tr>
+
+      <tr *ngFor="let project of getProjectsByStatus('active')"
+          class="project-row"
+          [class.selected]="selectedProjects.includes(project.id)"
+          (click)="toggleProjectDetails(project)">
+
+        <!-- Checkbox column -->
+        <td *ngIf="isColumnVisible('checkbox')" class="checkbox-column" (click)="$event.stopPropagation()">
+          <input type="checkbox"
+                 [checked]="selectedProjects.includes(project.id)"
+                 (change)="toggleProjectSelection(project, $event)">
+        </td>
+
+        <!-- Name column -->
+        <td *ngIf="isColumnVisible('name')" class="name-column">{{ project.name }}</td>
+
+        <!-- Status column -->
+        <td *ngIf="isColumnVisible('status')" class="status-column">
+          <div class="status-badge" [ngClass]="getStatusClass(project.status)">
+            {{ project.status === 'on_hold' ? 'On Hold' : (project.status.charAt(0).toUpperCase() + project.status.slice(1)) }}
+          </div>
+        </td>
+
+        <!-- Client column -->
+        <td *ngIf="isColumnVisible('client')" class="client-column">
+          {{ project.client_name || '-' }}
+        </td>
+
+        <!-- Budget column -->
+        <td *ngIf="isColumnVisible('budget')" class="budget-column">
+          {{ formatCurrency(project.budget) }}
+        </td>
+
+        <!-- Start Date column -->
+        <td *ngIf="isColumnVisible('start_date')" class="date-column">
+          {{ formatDate(project.start_date) }}
+        </td>
+
+        <!-- End Date column -->
+        <td *ngIf="isColumnVisible('end_date')" class="date-column">
+          {{ formatDate(project.end_date) }}
+        </td>
+
+        <!-- Custom columns -->
+        <ng-container *ngFor="let column of getVisibleColumns()">
+          <td *ngIf="column.id.startsWith('custom_')" class="custom-column">
+            {{ project.custom_fields && project.custom_fields[column.id.replace('custom_', '')] || '-' }}
+          </td>
+        </ng-container>
+
+        <!-- Actions column -->
+        <td *ngIf="isColumnVisible('actions')" class="actions-column" (click)="$event.stopPropagation()">
+          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)">
+            ✏️
+          </button>
+          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)">
+            🗑️
+          </button>
+        </td>
+      </tr>
+
+      <!-- On Hold Projects -->
+      <tr class="group-header">
+        <td [attr.colspan]="getVisibleColumnsCount()">On Hold Projects</td>
+      </tr>
+
+      <tr *ngFor="let project of getProjectsByStatus('on_hold')"
+          class="project-row"
+          [class.selected]="selectedProjects.includes(project.id)"
+          (click)="toggleProjectDetails(project)">
+        <!-- Same structure as active projects -->
+        <td *ngIf="isColumnVisible('checkbox')" class="checkbox-column" (click)="$event.stopPropagation()">
+          <input type="checkbox"
+                 [checked]="selectedProjects.includes(project.id)"
+                 (change)="toggleProjectSelection(project, $event)">
+        </td>
+        <td *ngIf="isColumnVisible('name')" class="name-column">{{ project.name }}</td>
+        <td *ngIf="isColumnVisible('status')" class="status-column">
+          <div class="status-badge" [ngClass]="getStatusClass(project.status)">
+            {{ project.status === 'on_hold' ? 'On Hold' : (project.status.charAt(0).toUpperCase() + project.status.slice(1)) }}
+          </div>
+        </td>
+        <td *ngIf="isColumnVisible('client')" class="client-column">
+          {{ project.client_name || '-' }}
+        </td>
+        <td *ngIf="isColumnVisible('budget')" class="budget-column">
+          {{ formatCurrency(project.budget) }}
+        </td>
+        <td *ngIf="isColumnVisible('start_date')" class="date-column">
+          {{ formatDate(project.start_date) }}
+        </td>
+        <td *ngIf="isColumnVisible('end_date')" class="date-column">
+          {{ formatDate(project.end_date) }}
+        </td>
+        <ng-container *ngFor="let column of getVisibleColumns()">
+          <td *ngIf="column.id.startsWith('custom_')" class="custom-column">
+            {{ project.custom_fields && project.custom_fields[column.id.replace('custom_', '')] || '-' }}
+          </td>
+        </ng-container>
+        <td *ngIf="isColumnVisible('actions')" class="actions-column" (click)="$event.stopPropagation()">
+          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)">
+            ✏️
+          </button>
+          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)">
+            🗑️
+          </button>
+        </td>
+      </tr>
+
+      <!-- Completed Projects -->
+      <tr class="group-header">
+        <td [attr.colspan]="getVisibleColumnsCount()">Completed Projects</td>
+      </tr>
+
+      <tr *ngFor="let project of getProjectsByStatus('completed')"
+          class="project-row"
+          [class.selected]="selectedProjects.includes(project.id)"
+          (click)="toggleProjectDetails(project)">
+        <!-- Same structure as active projects -->
+        <td *ngIf="isColumnVisible('checkbox')" class="checkbox-column" (click)="$event.stopPropagation()">
+          <input type="checkbox"
+                 [checked]="selectedProjects.includes(project.id)"
+                 (change)="toggleProjectSelection(project, $event)">
+        </td>
+        <td *ngIf="isColumnVisible('name')" class="name-column">{{ project.name }}</td>
+        <td *ngIf="isColumnVisible('status')" class="status-column">
+          <div class="status-badge" [ngClass]="getStatusClass(project.status)">
+            {{ project.status === 'on_hold' ? 'On Hold' : (project.status.charAt(0).toUpperCase() + project.status.slice(1)) }}
+          </div>
+        </td>
+        <td *ngIf="isColumnVisible('client')" class="client-column">
+          {{ project.client_name || '-' }}
+        </td>
+        <td *ngIf="isColumnVisible('budget')" class="budget-column">
+          {{ formatCurrency(project.budget) }}
+        </td>
+        <td *ngIf="isColumnVisible('start_date')" class="date-column">
+          {{ formatDate(project.start_date) }}
+        </td>
+        <td *ngIf="isColumnVisible('end_date')" class="date-column">
+          {{ formatDate(project.end_date) }}
+        </td>
+        <ng-container *ngFor="let column of getVisibleColumns()">
+          <td *ngIf="column.id.startsWith('custom_')" class="custom-column">
+            {{ project.custom_fields && project.custom_fields[column.id.replace('custom_', '')] || '-' }}
+          </td>
+        </ng-container>
+        <td *ngIf="isColumnVisible('actions')" class="actions-column" (click)="$event.stopPropagation()">
+          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)">
+            ✏️
+          </button>
+          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)">
+            🗑️
+          </button>
+        </td>
+      </tr>
+
+      <!-- Cancelled Projects -->
+      <tr class="group-header">
+        <td [attr.colspan]="getVisibleColumnsCount()">Cancelled Projects</td>
+      </tr>
+
+      <tr *ngFor="let project of getProjectsByStatus('cancelled')"
+          class="project-row"
+          [class.selected]="selectedProjects.includes(project.id)"
+          (click)="toggleProjectDetails(project)">
+        <!-- Same structure as active projects -->
+        <td *ngIf="isColumnVisible('checkbox')" class="checkbox-column" (click)="$event.stopPropagation()">
+          <input type="checkbox"
+                 [checked]="selectedProjects.includes(project.id)"
+                 (change)="toggleProjectSelection(project, $event)">
+        </td>
+        <td *ngIf="isColumnVisible('name')" class="name-column">{{ project.name }}</td>
+        <td *ngIf="isColumnVisible('status')" class="status-column">
+          <div class="status-badge" [ngClass]="getStatusClass(project.status)">
+            {{ project.status === 'on_hold' ? 'On Hold' : (project.status.charAt(0).toUpperCase() + project.status.slice(1)) }}
+          </div>
+        </td>
+        <td *ngIf="isColumnVisible('client')" class="client-column">
+          {{ project.client_name || '-' }}
+        </td>
+        <td *ngIf="isColumnVisible('budget')" class="budget-column">
+          {{ formatCurrency(project.budget) }}
+        </td>
+        <td *ngIf="isColumnVisible('start_date')" class="date-column">
+          {{ formatDate(project.start_date) }}
+        </td>
+        <td *ngIf="isColumnVisible('end_date')" class="date-column">
+          {{ formatDate(project.end_date) }}
+        </td>
+        <ng-container *ngFor="let column of getVisibleColumns()">
+          <td *ngIf="column.id.startsWith('custom_')" class="custom-column">
+            {{ project.custom_fields && project.custom_fields[column.id.replace('custom_', '')] || '-' }}
+          </td>
+        </ng-container>
+        <td *ngIf="isColumnVisible('actions')" class="actions-column" (click)="$event.stopPropagation()">
+          <button class="action-btn edit-btn" (click)="onEditProject(project, $event)">
+            ✏️
+          </button>
+          <button class="action-btn delete-btn" (click)="onDeleteProject(project.id, $event)">
+            🗑️
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

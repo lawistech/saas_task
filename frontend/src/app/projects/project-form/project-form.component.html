@@ -1,0 +1,148 @@
+<div class="project-form-overlay">
+  <div class="project-form-container">
+    <div class="form-header">
+      <h2>{{ formTitle }}</h2>
+      <button class="close-btn" (click)="onCancel()">✕</button>
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="name">Project Name *</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          [(ngModel)]="formData.name"
+          required
+          placeholder="Enter project name">
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          [(ngModel)]="formData.description"
+          rows="4"
+          placeholder="Enter project description"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" name="status" [(ngModel)]="formData.status">
+            <option value="active">Active</option>
+            <option value="on_hold">On Hold</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="budget">Budget</label>
+          <input
+            type="number"
+            id="budget"
+            name="budget"
+            [(ngModel)]="formData.budget"
+            placeholder="Enter budget amount">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="start_date">Start Date</label>
+          <input
+            type="date"
+            id="start_date"
+            name="start_date"
+            [(ngModel)]="formData.start_date">
+        </div>
+
+        <div class="form-group">
+          <label for="end_date">End Date</label>
+          <input
+            type="date"
+            id="end_date"
+            name="end_date"
+            [(ngModel)]="formData.end_date">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="client_name">Client Name</label>
+          <input
+            type="text"
+            id="client_name"
+            name="client_name"
+            [(ngModel)]="formData.client_name"
+            placeholder="Enter client name">
+        </div>
+
+        <div class="form-group">
+          <label for="client_email">Client Email</label>
+          <input
+            type="email"
+            id="client_email"
+            name="client_email"
+            [(ngModel)]="formData.client_email"
+            placeholder="Enter client email">
+        </div>
+      </div>
+
+      <!-- Custom Fields Section -->
+      <div class="custom-fields-section">
+        <h3>Custom Fields</h3>
+
+        <!-- Existing Custom Fields -->
+        <div class="form-row" *ngFor="let key of customFieldKeys">
+          <div class="form-group custom-field">
+            <label [for]="'custom_' + key">{{ key }}</label>
+            <div class="custom-field-input">
+              <input
+                type="text"
+                [id]="'custom_' + key"
+                [name]="'custom_' + key"
+                [(ngModel)]="formData.custom_fields![key]"
+                placeholder="Enter value">
+              <button type="button" class="remove-field-btn" (click)="removeCustomField(key)">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add New Custom Field -->
+        <div class="add-custom-field">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="new-field-key">Field Name</label>
+              <input
+                type="text"
+                id="new-field-key"
+                [(ngModel)]="newCustomFieldKey"
+                name="newCustomFieldKey"
+                placeholder="Enter field name">
+            </div>
+            <div class="form-group">
+              <label for="new-field-value">Field Value</label>
+              <input
+                type="text"
+                id="new-field-value"
+                [(ngModel)]="newCustomFieldValue"
+                name="newCustomFieldValue"
+                placeholder="Enter field value">
+            </div>
+          </div>
+          <button type="button" class="add-field-btn" (click)="addCustomField()">Add Custom Field</button>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" (click)="onCancel()">Cancel</button>
+        <button type="submit" class="submit-btn" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Saving...' : (project ? 'Update Project' : 'Create Project') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

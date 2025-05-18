@@ -1,0 +1,52 @@
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h2 class="app-title">Project Manager</h2>
+  </div>
+
+  <div class="user-info" *ngIf="user">
+    <div class="user-avatar">
+      <img *ngIf="user.profile_picture" [src]="user.profile_picture" alt="Profile Picture">
+      <div *ngIf="!user.profile_picture" class="avatar-placeholder">{{ user.name.charAt(0) }}</div>
+    </div>
+    <div class="user-details">
+      <h3 class="user-name">{{ user.name }}</h3>
+      <p class="user-email">{{ user.email }}</p>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul>
+      <li>
+        <a routerLink="/dashboard" routerLinkActive="active">
+          <i class="icon">📊</i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/projects" routerLinkActive="active">
+          <i class="icon">📁</i>
+          <span>Projects</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/tasks" routerLinkActive="active">
+          <i class="icon">📝</i>
+          <span>Tasks</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/profile" routerLinkActive="active">
+          <i class="icon">👤</i>
+          <span>Profile</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="logout-btn" (click)="logout()">
+      <i class="icon">🚪</i>
+      <span>Logout</span>
+    </button>
+  </div>
+</div>

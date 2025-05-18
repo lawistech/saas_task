@@ -1,0 +1,423 @@
+<div class="task-table-container">
+  <div class="table-controls">
+    <button class="column-settings-btn" (click)="toggleColumnSettings()">
+      <span class="settings-icon">⚙️</span> Column Settings
+    </button>
+
+    <!-- Column Settings Dropdown -->
+    <div class="column-settings-dropdown" *ngIf="showColumnSettings">
+      <div class="dropdown-header">
+        <h3>Column Settings</h3>
+        <button class="close-btn" (click)="toggleColumnSettings()">✕</button>
+      </div>
+
+      <div class="dropdown-content">
+        <div class="settings-section">
+          <h4>Visible Columns</h4>
+          <p class="settings-hint">Check columns to show/hide. Drag to reorder.</p>
+
+          <div class="column-list">
+            <div
+              *ngFor="let column of columns"
+              class="column-item"
+              [class.dragging]="draggedColumn === column"
+              draggable="true"
+              (dragstart)="onDragStart($event, column)"
+              (dragover)="onDragOver($event, column)"
+              (drop)="onDrop($event, column)"
+              (dragend)="onDragEnd()">
+
+              <div class="column-checkbox">
+                <input
+                  type="checkbox"
+                  [id]="'col-' + column.id"
+                  [checked]="column.visible"
+                  (change)="toggleColumnVisibility(column)">
+                <label [for]="'col-' + column.id">{{ column.name }}</label>
+              </div>
+
+              <div class="column-actions">
+                <button
+                  *ngIf="column.id.startsWith('custom_')"
+                  class="delete-column-btn"
+                  (click)="deleteColumn(column); $event.stopPropagation()">
+                  🗑️
+                </button>
+                <div class="drag-handle">
+                  <span class="drag-icon">⋮⋮</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <button class="reset-btn" (click)="resetToDefaultColumns()">Reset to Default</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pipeline-title">Sales pipeline</div>
+
+  <!-- Add Column Form -->
+  <div class="add-column-form" *ngIf="showAddColumnForm">
+    <div class="form-header">
+      <h3>Add New Column</h3>
+      <button class="close-btn" (click)="toggleAddColumnForm()">✕</button>
+    </div>
+    <div class="form-content">
+      <div class="form-group">
+        <label for="column-name">Column Name:</label>
+        <input type="text" id="column-name" [(ngModel)]="newColumnName" placeholder="Enter column name">
+      </div>
+      <div class="form-actions">
+        <button class="cancel-btn" (click)="toggleAddColumnForm()">Cancel</button>
+        <button class="add-btn" (click)="addCustomColumn()">Add Column</button>
+      </div>
+    </div>
+  </div>
+
+  <table class="task-table">
+    <thead>
+      <tr>
+        <!-- Dynamically generate columns based on visibility and order -->
+        <th *ngIf="isColumnVisible('checkbox')" class="checkbox-column">
+          <input type="checkbox" (change)="toggleSelectAll($event)">
+        </th>
+
+        <th *ngIf="isColumnVisible('title')" class="title-column" (click)="sortTasks('title')">
+          Deal name
+          <span class="sort-icon" *ngIf="sortField === 'title'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('owner')" class="owner-column" (click)="sortTasks('assignee')">
+          Owner
+          <span class="sort-icon" *ngIf="sortField === 'assignee'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('stage')" class="stage-column" (click)="sortTasks('stage')">
+          Stage
+          <span class="sort-icon" *ngIf="sortField === 'stage'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('priority')" class="priority-column" (click)="sortTasks('priority')">
+          Priority
+          <span class="sort-icon" *ngIf="sortField === 'priority'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('probability')" class="probability-column" (click)="sortTasks('completion')">
+          Close probability
+          <span class="sort-icon" *ngIf="sortField === 'completion'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('value')" class="value-column" (click)="sortTasks('value')">
+          Deal value
+          <span class="sort-icon" *ngIf="sortField === 'value'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('phone')" class="phone-column" (click)="sortTasks('phone')">
+          Phone
+          <span class="sort-icon" *ngIf="sortField === 'phone'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('status')" class="status-column" (click)="sortTasks('status')">
+          Status
+          <span class="sort-icon" *ngIf="sortField === 'status'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('due_date')" class="due-date-column" (click)="sortTasks('due_date')">
+          Due Date
+          <span class="sort-icon" *ngIf="sortField === 'due_date'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <th *ngIf="isColumnVisible('assignee')" class="assignee-column" (click)="sortTasks('assignee')">
+          Assignee
+          <span class="sort-icon" *ngIf="sortField === 'assignee'">
+            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+          </span>
+        </th>
+
+        <!-- Custom column headers -->
+        <ng-container *ngFor="let column of getVisibleColumns()">
+          <th *ngIf="column.id.startsWith('custom_')" class="custom-column">
+            {{ column.name }}
+          </th>
+        </ng-container>
+
+        <th *ngIf="isColumnVisible('actions')" class="actions-column">
+          <button class="add-column-btn" (click)="toggleAddColumnForm()">+</button>
+        </th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <!-- New deals section -->
+      <tr class="group-header">
+        <td [attr.colspan]="getVisibleColumnsCount()">New deals</td>
+      </tr>
+
+      <tr *ngFor="let task of getTasksByStatus('pending')"
+          class="task-row"
+          [class.selected]="selectedTasks.includes(task.id)"
+          (click)="toggleTaskDetails(task)">
+
+        <!-- Checkbox column -->
+        <td *ngIf="isColumnVisible('checkbox')" class="checkbox-column" (click)="$event.stopPropagation()">
+          <input type="checkbox"
+                 [checked]="selectedTasks.includes(task.id)"
+                 (change)="toggleTaskSelection(task)">
+        </td>
+
+        <!-- Title column -->
+        <td *ngIf="isColumnVisible('title')" class="title-column">{{ task.title }}</td>
+
+        <!-- Owner column -->
+        <td *ngIf="isColumnVisible('owner')" class="owner-column">
+          <div class="assignee-info" *ngIf="task.assignee">
+            <span class="assignee-avatar" *ngIf="!task.assignee.profile_picture">
+              {{ task.assignee.name.charAt(0) }}
+            </span>
+            <span class="assignee-avatar" *ngIf="task.assignee.profile_picture">
+              <img [src]="task.assignee.profile_picture" alt="Profile">
+            </span>
+          </div>
+          <span *ngIf="!task.assignee" class="unassigned-avatar">?</span>
+        </td>
+
+        <!-- Stage column -->
+        <td *ngIf="isColumnVisible('stage')" class="stage-column">
+          <div class="stage-badge" [ngClass]="getStageClass(task)">
+            {{ task.stage || 'Lead' }}
+          </div>
+        </td>
+
+        <!-- Priority column -->
+        <td *ngIf="isColumnVisible('priority')" class="priority-column">
+          <div class="priority-badge" [ngClass]="getPriorityClass(task)">
+            {{ task.priority | titlecase }}
+          </div>
+        </td>
+
+        <!-- Probability column -->
+        <td *ngIf="isColumnVisible('probability')" class="probability-column">
+          50%
+        </td>
+
+        <!-- Value column -->
+        <td *ngIf="isColumnVisible('value')" class="value-column">
+          $0.00
+        </td>
+
+        <!-- Phone column -->
+        <td *ngIf="isColumnVisible('phone')" class="phone-column">
+          <div class="phone-container">
+            <span class="country-flag" *ngIf="task.country_code">{{ getCountryFlag(task.country_code) }}</span>
+            <span class="phone-number">{{ task.phone || '+1 203 555 1234' }}</span>
+          </div>
+        </td>
+
+        <!-- Status column -->
+        <td *ngIf="isColumnVisible('status')" class="status-column">
+          <div class="status-badge" [ngClass]="getStatusClass(task)">
+            {{ task.status.replace('_', ' ') | titlecase }}
+          </div>
+        </td>
+
+        <!-- Due date column -->
+        <td *ngIf="isColumnVisible('due_date')" class="due-date-column">{{ formatDate(task.due_date) }}</td>
+
+        <!-- Assignee column -->
+        <td *ngIf="isColumnVisible('assignee')" class="assignee-column">
+          <div class="assignee-info" *ngIf="task.assignee">
+            <span class="assignee-name">{{ task.assignee.name }}</span>
+          </div>
+          <span *ngIf="!task.assignee">Unassigned</span>
+        </td>
+
+        <!-- Custom columns -->
+        <ng-container *ngFor="let column of getVisibleColumns()">
+          <td *ngIf="column.id.startsWith('custom_')" class="custom-column">
+            {{ task.custom_fields && task.custom_fields[column.id.replace('custom_', '')] || '-' }}
+          </td>
+        </ng-container>
+
+        <!-- Actions column -->
+        <td *ngIf="isColumnVisible('actions')" class="actions-column" (click)="$event.stopPropagation()">
+          <button class="action-btn edit-btn" (click)="onEditTask(task)">
+            ✏️
+          </button>
+          <button class="action-btn delete-btn" (click)="onDeleteTask(task.id)">
+            🗑️
+          </button>
+        </td>
+      </tr>
+
+      <!-- Won deals section -->
+      <tr class="group-header">
+        <td [attr.colspan]="getVisibleColumnsCount()">Won deals</td>
+      </tr>
+
+      <tr *ngFor="let task of getTasksByStatus('completed')"
+          class="task-row"
+          [class.selected]="selectedTasks.includes(task.id)"
+          (click)="toggleTaskDetails(task)">
+
+        <!-- Checkbox column -->
+        <td *ngIf="isColumnVisible('checkbox')" class="checkbox-column" (click)="$event.stopPropagation()">
+          <input type="checkbox"
+                 [checked]="selectedTasks.includes(task.id)"
+                 (change)="toggleTaskSelection(task)">
+        </td>
+
+        <!-- Title column -->
+        <td *ngIf="isColumnVisible('title')" class="title-column">{{ task.title }}</td>
+
+        <!-- Owner column -->
+        <td *ngIf="isColumnVisible('owner')" class="owner-column">
+          <div class="assignee-info" *ngIf="task.assignee">
+            <span class="assignee-avatar" *ngIf="!task.assignee.profile_picture">
+              {{ task.assignee.name.charAt(0) }}
+            </span>
+            <span class="assignee-avatar" *ngIf="task.assignee.profile_picture">
+              <img [src]="task.assignee.profile_picture" alt="Profile">
+            </span>
+          </div>
+          <span *ngIf="!task.assignee" class="unassigned-avatar">?</span>
+        </td>
+
+        <!-- Stage column -->
+        <td *ngIf="isColumnVisible('stage')" class="stage-column">
+          <div class="stage-badge stage-won">
+            Won
+          </div>
+        </td>
+
+        <!-- Priority column -->
+        <td *ngIf="isColumnVisible('priority')" class="priority-column">
+          <div class="priority-badge" [ngClass]="getPriorityClass(task)">
+            {{ task.priority | titlecase }}
+          </div>
+        </td>
+
+        <!-- Probability column -->
+        <td *ngIf="isColumnVisible('probability')" class="probability-column">
+          100%
+        </td>
+
+        <!-- Value column -->
+        <td *ngIf="isColumnVisible('value')" class="value-column">
+          $0.00
+        </td>
+
+        <!-- Phone column -->
+        <td *ngIf="isColumnVisible('phone')" class="phone-column">
+          <div class="phone-container">
+            <span class="country-flag" *ngIf="task.country_code">{{ getCountryFlag(task.country_code) }}</span>
+            <span class="phone-number">{{ task.phone || '+1 203 555 1234' }}</span>
+          </div>
+        </td>
+
+        <!-- Status column -->
+        <td *ngIf="isColumnVisible('status')" class="status-column">
+          <div class="status-badge" [ngClass]="getStatusClass(task)">
+            {{ task.status.replace('_', ' ') | titlecase }}
+          </div>
+        </td>
+
+        <!-- Due date column -->
+        <td *ngIf="isColumnVisible('due_date')" class="due-date-column">{{ formatDate(task.due_date) }}</td>
+
+        <!-- Assignee column -->
+        <td *ngIf="isColumnVisible('assignee')" class="assignee-column">
+          <div class="assignee-info" *ngIf="task.assignee">
+            <span class="assignee-name">{{ task.assignee.name }}</span>
+          </div>
+          <span *ngIf="!task.assignee">Unassigned</span>
+        </td>
+
+        <!-- Custom columns -->
+        <ng-container *ngFor="let column of getVisibleColumns()">
+          <td *ngIf="column.id.startsWith('custom_')" class="custom-column">
+            {{ task.custom_fields && task.custom_fields[column.id.replace('custom_', '')] || '-' }}
+          </td>
+        </ng-container>
+
+        <!-- Actions column -->
+        <td *ngIf="isColumnVisible('actions')" class="actions-column" (click)="$event.stopPropagation()">
+          <button class="action-btn edit-btn" (click)="onEditTask(task)">
+            ✏️
+          </button>
+          <button class="action-btn delete-btn" (click)="onDeleteTask(task.id)">
+            🗑️
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Task Details Panel (shown when a task is clicked) -->
+  <div class="task-details-panel" *ngIf="selectedTask">
+    <div class="panel-header">
+      <h3>{{ selectedTask.title }}</h3>
+      <button class="close-btn" (click)="closeTaskDetails()">✕</button>
+    </div>
+    <div class="panel-content">
+      <p class="task-description">{{ selectedTask.description || 'No description provided.' }}</p>
+
+
+
+      <!-- Custom fields -->
+      <div class="detail-row" *ngIf="selectedTask.custom_fields && getCustomFieldsKeys(selectedTask).length > 0">
+        <span class="detail-label">Custom Fields:</span>
+        <div class="custom-fields-list">
+          <div class="custom-field-item" *ngFor="let column of getCustomColumns()">
+            <span class="custom-field-key">{{ column.name }}:</span>
+            <span class="custom-field-value">
+              {{ selectedTask.custom_fields![column.id.replace('custom_', '')] || '-' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-actions">
+        <button
+          class="status-btn pending-btn"
+          [class.active]="selectedTask.status === 'pending'"
+          (click)="updateTaskStatus(selectedTask, 'pending')">
+          Pending
+        </button>
+        <button
+          class="status-btn progress-btn"
+          [class.active]="selectedTask.status === 'in_progress'"
+          (click)="updateTaskStatus(selectedTask, 'in_progress')">
+          In Progress
+        </button>
+        <button
+          class="status-btn completed-btn"
+          [class.active]="selectedTask.status === 'completed'"
+          (click)="updateTaskStatus(selectedTask, 'completed')">
+          Completed
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,90 @@
+<div class="projects-container">
+  <div class="projects-header">
+    <div class="header-left">
+      <h1>Project Management</h1>
+      <div class="view-toggle">
+        <button
+          class="view-btn"
+          [class.active]="viewMode === 'list'"
+          (click)="viewMode = 'list'; loadProjects(activeFilter || undefined)">
+          <i class="icon">📋</i> List View
+        </button>
+        <button
+          class="view-btn"
+          [class.active]="viewMode === 'pipeline'"
+          (click)="viewMode = 'pipeline'; loadProjects(activeFilter || undefined)">
+          <i class="icon">📊</i> Pipeline View
+        </button>
+      </div>
+    </div>
+    <button class="add-project-btn" (click)="openProjectForm()">
+      <i class="icon">➕</i> Add New Project
+    </button>
+  </div>
+
+  <div class="filters">
+    <button
+      class="filter-btn"
+      [class.active]="activeFilter === null"
+      (click)="loadProjects()">
+      All
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="activeFilter === 'active'"
+      (click)="loadProjects('active')">
+      Active
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="activeFilter === 'on_hold'"
+      (click)="loadProjects('on_hold')">
+      On Hold
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="activeFilter === 'completed'"
+      (click)="loadProjects('completed')">
+      Completed
+    </button>
+    <button
+      class="filter-btn"
+      [class.active]="activeFilter === 'cancelled'"
+      (click)="loadProjects('cancelled')">
+      Cancelled
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading projects...</p>
+  </div>
+
+  <!-- List View -->
+  <app-project-list
+    *ngIf="!isLoading && viewMode === 'list'"
+    [projects]="projects"
+    (editProject)="openProjectForm($event)"
+    (deleteProject)="onProjectDeleted($event)"
+    (projectStatusChanged)="onProjectStatusChanged($event)">
+  </app-project-list>
+
+  <!-- Pipeline View -->
+  <app-project-pipeline
+    *ngIf="!isLoading && viewMode === 'pipeline'"
+    [projects]="projects"
+    (editProject)="openProjectForm($event)"
+    (deleteProject)="onProjectDeleted($event)"
+    (projectStatusChanged)="onProjectStatusChanged($event)">
+  </app-project-pipeline>
+
+  <div *ngIf="!isLoading && projects.length === 0" class="no-projects">
+    <p>No projects found. Create a new project to get started!</p>
+  </div>
+
+  <app-project-form
+    *ngIf="showProjectForm"
+    [project]="selectedProject"
+    (close)="closeProjectForm()"
+    (saved)="onProjectSaved()">
+  </app-project-form>
+</div>
