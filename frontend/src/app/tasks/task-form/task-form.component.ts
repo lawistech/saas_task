@@ -78,8 +78,11 @@ export class TaskFormComponent implements OnInit {
         this.customFieldKeys = Object.keys(this.task.custom_fields);
       }
     } else if (this.projectId) {
-      // If creating a new task from project details page, pre-select the project
+      // If creating a new task from project details page or project task section, pre-select the project
       this.formData.project_id = this.projectId;
+
+      // Update form title to reflect the project context
+      this.formTitle = 'Add Task to Project';
     }
   }
 

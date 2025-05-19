@@ -44,16 +44,19 @@ export class ProjectsComponent implements OnInit {
   }
 
   openProjectForm(project?: Project): void {
+    console.log('Opening project form', project ? 'for editing' : 'for new project');
     this.selectedProject = project || null;
     this.showProjectForm = true;
   }
 
   closeProjectForm(): void {
+    console.log('Closing project form');
     this.showProjectForm = false;
     this.selectedProject = null;
   }
 
   onProjectSaved(): void {
+    console.log('Project saved, closing form and reloading projects');
     this.closeProjectForm();
     this.loadProjects(this.activeFilter || undefined);
   }

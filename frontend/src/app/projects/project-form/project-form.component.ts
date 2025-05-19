@@ -126,6 +126,8 @@ export class ProjectFormComponent implements OnInit {
   }
 
   onSubmit(): void {
+    console.log('Form submitted with data:', this.formData);
+
     if (!this.formData.name) {
       alert('Project name is required');
       return;
@@ -143,29 +145,55 @@ export class ProjectFormComponent implements OnInit {
 
     if (this.project) {
       // Update existing project
+      console.log('Updating existing project with ID:', this.project.id);
       this.projectService.updateProject(this.project.id, this.formData).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Project updated successfully:', response);
           this.isSubmitting = false;
           this.projectSaved.emit();
         },
         error: (error) => {
-          console.error('Error updating project', error);
+          console.error('Error updating project:', error);
+          if (error.error && error.error.errors) {
+            console.error('Validation errors:', error.error.errors);
+            alert('Error updating project: ' + this.formatValidationErrors(error.error.errors));
+          } else {
+            alert('Error updating project. Please try again.');
+          }
           this.isSubmitting = false;
         }
       });
     } else {
       // Create new project
+      console.log('Creating new project');
       this.projectService.createProject(this.formData).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Project created successfully:', response);
           this.isSubmitting = false;
           this.projectSaved.emit();
         },
         error: (error) => {
-          console.error('Error creating project', error);
+          console.error('Error creating project:', error);
+          if (error.error && error.error.errors) {
+            console.error('Validation errors:', error.error.errors);
+            alert('Error creating project: ' + this.formatValidationErrors(error.error.errors));
+          } else {
+            alert('Error creating project. Please try again.');
+          }
           this.isSubmitting = false;
         }
       });
     }
+  }
+
+  private formatValidationErrors(errors: any): string {
+    let errorMessage = '';
+    for (const field in errors) {
+      if (errors.hasOwnProperty(field)) {
+        errorMessage += `${field}: ${errors[field].join(', ')}\n`;
+      }
+    }
+    return errorMessage;
   }
 
   onCancel(): void {

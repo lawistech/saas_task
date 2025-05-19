@@ -6,13 +6,13 @@
         <button
           class="view-btn"
           [class.active]="viewMode === 'list'"
-          (click)="viewMode = 'list'; loadTasks(activeFilter || undefined)">
+          (click)="viewMode = 'list'; loadAllTasks(activeFilter || undefined)">
           <i class="icon">📋</i> List View
         </button>
         <button
           class="view-btn"
           [class.active]="viewMode === 'pipeline'"
-          (click)="viewMode = 'pipeline'; loadTasks(activeFilter || undefined)">
+          (click)="viewMode = 'pipeline'; loadAllTasks(activeFilter || undefined)">
           <i class="icon">📊</i> Pipeline View
         </button>
       </div>
@@ -26,25 +26,25 @@
     <button
       class="filter-btn"
       [class.active]="activeFilter === null"
-      (click)="loadTasks()">
+      (click)="loadProjectsAndTasks()">
       All
     </button>
     <button
       class="filter-btn"
       [class.active]="activeFilter === 'pending'"
-      (click)="loadTasks('pending')">
+      (click)="loadProjectsAndTasks('pending')">
       Pending
     </button>
     <button
       class="filter-btn"
       [class.active]="activeFilter === 'in_progress'"
-      (click)="loadTasks('in_progress')">
+      (click)="loadProjectsAndTasks('in_progress')">
       In Progress
     </button>
     <button
       class="filter-btn"
       [class.active]="activeFilter === 'completed'"
-      (click)="loadTasks('completed')">
+      (click)="loadProjectsAndTasks('completed')">
       Completed
     </button>
   </div>
@@ -54,13 +54,35 @@
   </div>
 
   <!-- List View -->
-  <app-task-list
-    *ngIf="!isLoading && viewMode === 'list'"
-    [tasks]="tasks"
-    (editTask)="openTaskForm($event)"
-    (deleteTask)="onTaskDeleted($event)"
-    (taskStatusChanged)="onTaskStatusChanged($event)">
-  </app-task-list>
+  <div *ngIf="!isLoading && viewMode === 'list'" class="project-tasks-container">
+    <!-- Multi-project task list -->
+    <app-task-list
+      [multiProjectMode]="true"
+      [projectTasks]="projectTasks"
+      [projects]="projects"
+      (editTask)="openTaskForm($event)"
+      (deleteTask)="onTaskDeleted($event)"
+      (taskStatusChanged)="onTaskStatusChanged($event)">
+    </app-task-list>
+
+    <!-- Unassigned Tasks -->
+    <div *ngIf="unassignedTasks.length > 0" class="project-task-section">
+      <div class="project-header">
+        <h2>Unassigned Tasks</h2>
+        <button class="add-project-task-btn" (click)="openTaskForm()">
+          <i class="icon">➕</i> Add Task
+        </button>
+      </div>
+
+      <app-task-list
+        [tasks]="unassignedTasks"
+        [projectContext]="false"
+        (editTask)="openTaskForm($event)"
+        (deleteTask)="onTaskDeleted($event)"
+        (taskStatusChanged)="onTaskStatusChanged($event)">
+      </app-task-list>
+    </div>
+  </div>
 
   <!-- Pipeline View -->
   <app-task-pipeline
@@ -75,9 +97,14 @@
     <p>No tasks found. Create a new task to get started!</p>
   </div>
 
+  <div *ngIf="!isLoading && viewMode === 'list' && projects.length === 0 && unassignedTasks.length === 0" class="no-projects">
+    <p>No projects found. Create a project first to organize your tasks better!</p>
+  </div>
+
   <app-task-form
     *ngIf="showTaskForm"
     [task]="selectedTask"
+    [projectId]="selectedTask?.project_id || null"
     (close)="closeTaskForm()"
     (saved)="onTaskSaved()">
   </app-task-form>

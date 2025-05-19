@@ -125,6 +125,8 @@
       <app-task-list
         *ngIf="viewMode === 'list'"
         [tasks]="tasks"
+        [projectContext]="true"
+        [projectId]="projectId"
         (editTask)="openTaskForm($event)"
         (deleteTask)="onTaskDeleted($event)"
         (taskStatusChanged)="onTaskStatusChanged($event)">

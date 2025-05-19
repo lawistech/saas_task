@@ -84,7 +84,7 @@
   <app-project-form
     *ngIf="showProjectForm"
     [project]="selectedProject"
-    (close)="closeProjectForm()"
-    (saved)="onProjectSaved()">
+    (formCancelled)="closeProjectForm()"
+    (projectSaved)="onProjectSaved()">
   </app-project-form>
 </div>

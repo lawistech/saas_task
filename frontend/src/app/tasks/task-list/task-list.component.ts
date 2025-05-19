@@ -2,8 +2,10 @@ import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Task } from '../../models/task';
+import { Project } from '../../models/project';
 import { TaskService } from '../../services/task.service';
 import { ColumnConfig, DEFAULT_COLUMNS } from '../../models/column-config';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-task-list',
@@ -14,6 +16,11 @@ import { ColumnConfig, DEFAULT_COLUMNS } from '../../models/column-config';
 })
 export class TaskListComponent implements OnInit, OnChanges {
   @Input() tasks: Task[] = [];
+  @Input() projectContext: boolean = false; // Flag to indicate if component is used within a project
+  @Input() projectId?: number; // Optional project ID when in project context
+  @Input() multiProjectMode: boolean = false; // Flag to indicate if we should display multiple project tables
+  @Input() projectTasks: Map<number, Task[]> = new Map(); // Map of project ID to tasks for multi-project mode
+  @Input() projects: Project[] = []; // List of projects for multi-project mode
   @Output() editTask = new EventEmitter<Task>();
   @Output() deleteTask = new EventEmitter<number>();
   @Output() taskStatusChanged = new EventEmitter<Task>();
@@ -33,15 +40,44 @@ export class TaskListComponent implements OnInit, OnChanges {
 
   private readonly STORAGE_KEY = 'task_table_columns';
 
-  constructor(private taskService: TaskService) {}
+  constructor(
+    private taskService: TaskService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadColumnSettings();
+
+    // Initialize sorted project tasks if in multi-project mode
+    if (this.multiProjectMode) {
+      this.updateSortedProjectTasks();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['tasks']) {
       this.sortTasks(this.sortField);
+    }
+
+    // If projectContext changes, update column visibility
+    if (changes['projectContext'] && !changes['projectContext'].firstChange) {
+      this.updateProjectColumnVisibility();
+    }
+
+    // If projectTasks changes, update our sorted tasks for each project
+    if (changes['projectTasks'] && this.multiProjectMode) {
+      this.updateSortedProjectTasks();
+    }
+  }
+
+  // Map to store sorted tasks for each project
+  sortedProjectTasks: Map<number, Task[]> = new Map();
+
+  updateProjectColumnVisibility(): void {
+    const projectColumn = this.columns.find(col => col.id === 'project');
+    if (projectColumn) {
+      projectColumn.visible = !this.projectContext;
+      this.saveColumnSettings();
     }
   }
 
@@ -62,6 +98,15 @@ export class TaskListComponent implements OnInit, OnChanges {
 
   resetToDefaultColumns(): void {
     this.columns = [...DEFAULT_COLUMNS];
+
+    // If in project context, hide the project column
+    if (this.projectContext) {
+      const projectColumn = this.columns.find(col => col.id === 'project');
+      if (projectColumn) {
+        projectColumn.visible = false;
+      }
+    }
+
     this.saveColumnSettings();
   }
 
@@ -155,17 +200,30 @@ export class TaskListComponent implements OnInit, OnChanges {
       this.sortDirection = 'asc';
     }
 
-    this.sortedTasks = [...this.tasks].sort((a, b) => {
+    this.sortedTasks = this.sortTasksArray([...this.tasks], field, this.sortDirection);
+
+    // If in multi-project mode, also update sorted tasks for each project
+    if (this.multiProjectMode) {
+      this.updateSortedProjectTasks();
+    }
+  }
+
+  // Helper method to sort an array of tasks
+  sortTasksArray(tasks: Task[], field: string, direction: 'asc' | 'desc'): Task[] {
+    return tasks.sort((a, b) => {
       let valueA: any;
       let valueB: any;
 
-      // Handle special case for assignee
+      // Handle special cases
       if (field === 'assignee') {
         valueA = a.assignee?.name || '';
         valueB = b.assignee?.name || '';
       } else if (field === 'due_date') {
         valueA = a.due_date ? new Date(a.due_date).getTime() : Number.MAX_SAFE_INTEGER;
         valueB = b.due_date ? new Date(b.due_date).getTime() : Number.MAX_SAFE_INTEGER;
+      } else if (field === 'project') {
+        valueA = a.project?.name || '';
+        valueB = b.project?.name || '';
       } else {
         valueA = (a as any)[field] || '';
         valueB = (b as any)[field] || '';
@@ -173,11 +231,11 @@ export class TaskListComponent implements OnInit, OnChanges {
 
       // Compare values
       if (typeof valueA === 'string' && typeof valueB === 'string') {
-        return this.sortDirection === 'asc'
+        return direction === 'asc'
           ? valueA.localeCompare(valueB)
           : valueB.localeCompare(valueA);
       } else {
-        return this.sortDirection === 'asc'
+        return direction === 'asc'
           ? (valueA > valueB ? 1 : -1)
           : (valueA < valueB ? 1 : -1);
       }
@@ -283,6 +341,34 @@ export class TaskListComponent implements OnInit, OnChanges {
     return this.sortedTasks.filter(task => task.status === status);
   }
 
+  // Get tasks by status for a specific project
+  getProjectTasksByStatus(projectId: number, status: string): Task[] {
+    const projectSortedTasks = this.sortedProjectTasks.get(projectId) || [];
+    return projectSortedTasks.filter(task => task.status === status);
+  }
+
+  // Update sorted tasks for each project
+  updateSortedProjectTasks(): void {
+    this.sortedProjectTasks.clear();
+
+    // For each project, sort its tasks
+    this.projectTasks.forEach((tasks, projectId) => {
+      const sortedTasks = this.sortTasksArray([...tasks], this.sortField, this.sortDirection);
+      this.sortedProjectTasks.set(projectId, sortedTasks);
+    });
+  }
+
+  // Get project name by ID
+  getProjectName(projectId: number): string {
+    const project = this.projects.find(p => p.id === projectId);
+    return project ? project.name : 'Unknown Project';
+  }
+
+  // Get project IDs as an array for template iteration
+  getProjectIds(): number[] {
+    return Array.from(this.projectTasks.keys());
+  }
+
   getVisibleColumnsCount(): number {
     return this.columns.filter(col => col.visible).length;
   }
@@ -331,6 +417,12 @@ export class TaskListComponent implements OnInit, OnChanges {
     };
 
     return flagMap[countryCode] || '🌐';
+  }
+
+  navigateToProject(projectId: number): void {
+    if (projectId) {
+      this.router.navigate(['/projects', projectId]);
+    }
   }
 
   toggleAddColumnForm(): void {
