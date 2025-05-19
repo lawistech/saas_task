@@ -28,6 +28,17 @@ class ProjectController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Filter by sales pipeline flag if provided
+        if ($request->has('is_sales_pipeline')) {
+            $isSalesPipeline = filter_var($request->is_sales_pipeline, FILTER_VALIDATE_BOOLEAN);
+            $query->where('is_sales_pipeline', $isSalesPipeline);
+        }
+
+        // Filter by sales stage if provided
+        if ($request->has('sales_stage')) {
+            $query->where('sales_stage', $request->sales_stage);
+        }
+
         $projects = $query->orderBy('created_at', 'desc')->get();
 
         return response()->json($projects);
@@ -45,11 +56,16 @@ class ProjectController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:active,on_hold,completed,cancelled',
+            'is_sales_pipeline' => 'nullable|boolean',
+            'sales_stage' => 'nullable|string|max:255',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'client_name' => 'nullable|string|max:255',
             'client_email' => 'nullable|email|max:255',
             'budget' => 'nullable|numeric|min:0',
+            'deal_value' => 'nullable|numeric|min:0',
+            'deal_owner' => 'nullable|string|max:255',
+            'expected_close_date' => 'nullable|date',
             'custom_fields' => 'nullable|array',
         ]);
 
@@ -98,11 +114,16 @@ class ProjectController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'sometimes|required|in:active,on_hold,completed,cancelled',
+            'is_sales_pipeline' => 'nullable|boolean',
+            'sales_stage' => 'nullable|string|max:255',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'client_name' => 'nullable|string|max:255',
             'client_email' => 'nullable|email|max:255',
             'budget' => 'nullable|numeric|min:0',
+            'deal_value' => 'nullable|numeric|min:0',
+            'deal_owner' => 'nullable|string|max:255',
+            'expected_close_date' => 'nullable|date',
             'custom_fields' => 'nullable|array',
         ]);
 

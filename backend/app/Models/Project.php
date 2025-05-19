@@ -21,11 +21,16 @@ class Project extends Model
         'name',
         'description',
         'status',
+        'is_sales_pipeline',
+        'sales_stage',
         'start_date',
         'end_date',
         'client_name',
         'client_email',
         'budget',
+        'deal_value',
+        'deal_owner',
+        'expected_close_date',
         'custom_fields',
     ];
 
@@ -37,6 +42,8 @@ class Project extends Model
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
+        'expected_close_date' => 'datetime',
+        'is_sales_pipeline' => 'boolean',
         'custom_fields' => 'array',
     ];
 

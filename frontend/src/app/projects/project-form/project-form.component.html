@@ -38,7 +38,7 @@
           </select>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" *ngIf="!isSalesPipeline">
           <label for="budget">Budget</label>
           <input
             type="number"
@@ -46,6 +46,49 @@
             name="budget"
             [(ngModel)]="formData.budget"
             placeholder="Enter budget amount">
+        </div>
+
+        <div class="form-group" *ngIf="isSalesPipeline">
+          <label for="sales_stage">Sales Stage</label>
+          <select id="sales_stage" name="sales_stage" [(ngModel)]="formData.sales_stage">
+            <option *ngFor="let stage of salesStages" [value]="stage">{{ stage }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Sales Pipeline Fields -->
+      <div *ngIf="isSalesPipeline">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="deal_value">Deal Value</label>
+            <input
+              type="number"
+              id="deal_value"
+              name="deal_value"
+              [(ngModel)]="formData.deal_value"
+              placeholder="Enter deal value">
+          </div>
+
+          <div class="form-group">
+            <label for="deal_owner">Deal Owner</label>
+            <input
+              type="text"
+              id="deal_owner"
+              name="deal_owner"
+              [(ngModel)]="formData.deal_owner"
+              placeholder="Enter deal owner">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="expected_close_date">Expected Close Date</label>
+            <input
+              type="date"
+              id="expected_close_date"
+              name="expected_close_date"
+              [(ngModel)]="formData.expected_close_date">
+          </div>
         </div>
       </div>
 

@@ -16,14 +16,35 @@ export class ProjectService {
   /**
    * Get all projects for the authenticated user
    * @param status Optional status filter
+   * @param isSalesPipeline Optional filter for sales pipeline projects
    */
-  getProjects(status?: string): Observable<Project[]> {
+  getProjects(status?: string, isSalesPipeline?: boolean): Observable<Project[]> {
     let params: any = {};
-    
+
     if (status) {
       params.status = status;
     }
-    
+
+    if (isSalesPipeline !== undefined) {
+      params.is_sales_pipeline = isSalesPipeline;
+    }
+
+    return this.http.get<Project[]>(this.apiUrl, { params });
+  }
+
+  /**
+   * Get all sales pipeline projects
+   * @param salesStage Optional sales stage filter
+   */
+  getSalesPipelineProjects(salesStage?: string): Observable<Project[]> {
+    let params: any = {
+      is_sales_pipeline: true
+    };
+
+    if (salesStage) {
+      params.sales_stage = salesStage;
+    }
+
     return this.http.get<Project[]>(this.apiUrl, { params });
   }
 
@@ -69,19 +90,19 @@ export class ProjectService {
    */
   getProjectTasks(projectId: number, status?: string, priority?: string, view?: string): Observable<Task[] | Record<string, Task[]>> {
     let params: any = {};
-    
+
     if (status) {
       params.status = status;
     }
-    
+
     if (priority) {
       params.priority = priority;
     }
-    
+
     if (view) {
       params.view = view;
     }
-    
+
     return this.http.get<Task[] | Record<string, Task[]>>(`${this.apiUrl}/${projectId}/tasks`, { params });
   }
 }

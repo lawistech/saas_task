@@ -14,18 +14,25 @@ import { ColumnConfig } from '../../models/column-config';
 })
 export class ProjectFormComponent implements OnInit {
   @Input() project: Project | null = null;
-  @Output() close = new EventEmitter<void>();
-  @Output() saved = new EventEmitter<void>();
+  @Input() isSalesPipeline: boolean = false;
+  @Input() salesStages: string[] = ['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
+  @Output() formCancelled = new EventEmitter<void>();
+  @Output() projectSaved = new EventEmitter<void>();
 
   formData: Partial<Project> = {
     name: '',
     description: '',
     status: 'active',
+    is_sales_pipeline: false,
+    sales_stage: null,
     start_date: null,
     end_date: null,
     client_name: null,
     client_email: null,
     budget: null,
+    deal_value: null,
+    deal_owner: null,
+    expected_close_date: null,
     custom_fields: {}
   };
 
@@ -44,17 +51,33 @@ export class ProjectFormComponent implements OnInit {
   ngOnInit(): void {
     this.loadCustomColumns();
 
+    // Set form title based on whether it's a sales pipeline project
+    if (this.isSalesPipeline) {
+      this.formTitle = this.project?.id ? 'Edit Sales Opportunity' : 'Create Sales Opportunity';
+      this.formData.is_sales_pipeline = true;
+
+      // Set default sales stage if not set
+      if (!this.formData.sales_stage) {
+        this.formData.sales_stage = 'Lead';
+      }
+    }
+
     if (this.project) {
-      this.formTitle = 'Edit Project';
+      this.formTitle = this.isSalesPipeline ? 'Edit Sales Opportunity' : 'Edit Project';
       this.formData = {
         name: this.project.name,
         description: this.project.description,
         status: this.project.status,
+        is_sales_pipeline: this.project.is_sales_pipeline || this.isSalesPipeline,
+        sales_stage: this.project.sales_stage,
         start_date: this.project.start_date,
         end_date: this.project.end_date,
         client_name: this.project.client_name,
         client_email: this.project.client_email,
         budget: this.project.budget,
+        deal_value: this.project.deal_value,
+        deal_owner: this.project.deal_owner,
+        expected_close_date: this.project.expected_close_date,
         custom_fields: this.project.custom_fields || {}
       };
 
@@ -110,12 +133,20 @@ export class ProjectFormComponent implements OnInit {
 
     this.isSubmitting = true;
 
+    // Ensure sales pipeline fields are set correctly
+    if (this.isSalesPipeline) {
+      this.formData.is_sales_pipeline = true;
+      if (!this.formData.sales_stage) {
+        this.formData.sales_stage = 'Lead';
+      }
+    }
+
     if (this.project) {
       // Update existing project
       this.projectService.updateProject(this.project.id, this.formData).subscribe({
         next: () => {
           this.isSubmitting = false;
-          this.saved.emit();
+          this.projectSaved.emit();
         },
         error: (error) => {
           console.error('Error updating project', error);
@@ -127,7 +158,7 @@ export class ProjectFormComponent implements OnInit {
       this.projectService.createProject(this.formData).subscribe({
         next: () => {
           this.isSubmitting = false;
-          this.saved.emit();
+          this.projectSaved.emit();
         },
         error: (error) => {
           console.error('Error creating project', error);
@@ -138,6 +169,6 @@ export class ProjectFormComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.close.emit();
+    this.formCancelled.emit();
   }
 }

@@ -1,0 +1,268 @@
+.sales-pipeline-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+  }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.pipeline-board {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  height: calc(100vh - 200px);
+  min-height: 500px;
+}
+
+.pipeline-column {
+  flex: 1;
+  min-width: 280px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+
+  &.stage-lead {
+    border-top: 4px solid #6c757d;
+  }
+
+  &.stage-qualified {
+    border-top: 4px solid #17a2b8;
+  }
+
+  &.stage-proposal {
+    border-top: 4px solid #ffc107;
+  }
+
+  &.stage-negotiation {
+    border-top: 4px solid #fd7e14;
+  }
+
+  &.stage-closed-won {
+    border-top: 4px solid #28a745;
+  }
+
+  &.stage-closed-lost {
+    border-top: 4px solid #dc3545;
+  }
+}
+
+.column-header {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .project-count {
+    background-color: #e0e0e0;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+}
+
+.project-cards {
+  padding: 15px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.project-card {
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  cursor: grab;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.project-header {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.project-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.project-details {
+  margin-bottom: 15px;
+}
+
+.detail-row {
+  display: flex;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.detail-label {
+  color: #666;
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  color: #333;
+  font-weight: 500;
+}
+
+.project-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+
+  &.view-btn:hover {
+    color: #17a2b8;
+  }
+
+  &.edit-btn:hover {
+    color: #ffc107;
+  }
+
+  &.delete-btn:hover {
+    color: #dc3545;
+  }
+}
+
+.empty-column {
+  text-align: center;
+  color: #999;
+  padding: 20px 0;
+  font-style: italic;
+}
+
+// Modal styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+
+    &:hover {
+      color: #333;
+    }
+  }
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .pipeline-board {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .pipeline-column {
+    min-width: 100%;
+    margin-bottom: 20px;
+  }
+}

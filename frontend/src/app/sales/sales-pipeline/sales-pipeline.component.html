@@ -1,0 +1,99 @@
+<div class="sales-pipeline-container">
+  <div class="header">
+    <h1>Sales Pipeline</h1>
+    <div class="actions">
+      <button class="btn btn-primary" (click)="createNewSalesProject()">
+        <i class="fas fa-plus"></i> New Opportunity
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading sales pipeline...</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="pipeline-board">
+    <div *ngFor="let stage of salesStages"
+         class="pipeline-column"
+         [ngClass]="getStageClass(stage)"
+         (dragover)="onDragOver($event, stage)"
+         (drop)="onDrop($event, stage)">
+
+      <div class="column-header">
+        <h2>{{ stage }}</h2>
+        <span class="project-count">{{ groupedProjects[stage].length }}</span>
+      </div>
+
+      <div class="project-cards">
+        <div *ngFor="let project of groupedProjects[stage]"
+             class="project-card"
+             draggable="true"
+             (dragstart)="onDragStart($event, project)"
+             (dragend)="onDragEnd()">
+
+          <div class="project-header">
+            <div class="project-title" (click)="viewProjectDetails(project)">{{ project.name }}</div>
+          </div>
+
+          <div class="project-details">
+            <div class="detail-row" *ngIf="project.client_name">
+              <div class="detail-label">Client:</div>
+              <div class="detail-value">{{ project.client_name }}</div>
+            </div>
+
+            <div class="detail-row" *ngIf="project.deal_value">
+              <div class="detail-label">Value:</div>
+              <div class="detail-value">{{ project.deal_value | currency }}</div>
+            </div>
+
+            <div class="detail-row" *ngIf="project.expected_close_date">
+              <div class="detail-label">Expected Close:</div>
+              <div class="detail-value">{{ project.expected_close_date | date:'mediumDate' }}</div>
+            </div>
+
+            <div class="detail-row" *ngIf="project.deal_owner">
+              <div class="detail-label">Owner:</div>
+              <div class="detail-value">{{ project.deal_owner }}</div>
+            </div>
+          </div>
+
+          <div class="project-actions">
+            <button class="action-btn view-btn" (click)="viewProjectDetails(project)" title="View Details">
+              👁️
+            </button>
+            <button class="action-btn edit-btn" (click)="openProjectForm(project)" title="Edit Project">
+              ✏️
+            </button>
+            <button class="action-btn delete-btn" (click)="onProjectDeleted(project.id)" title="Delete Project">
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty state for column -->
+        <div *ngIf="groupedProjects[stage].length === 0" class="empty-column">
+          <p>No projects in this stage</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Form Modal -->
+  <div *ngIf="showProjectForm" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2>{{ selectedProject?.id ? 'Edit' : 'Create' }} Sales Opportunity</h2>
+        <button class="close-btn" (click)="closeProjectForm()">×</button>
+      </div>
+      <div class="modal-body">
+        <app-project-form 
+          [project]="selectedProject" 
+          [isSalesPipeline]="true"
+          [salesStages]="salesStages"
+          (projectSaved)="onProjectSaved()" 
+          (formCancelled)="closeProjectForm()">
+        </app-project-form>
+      </div>
+    </div>
+  </div>
+</div>

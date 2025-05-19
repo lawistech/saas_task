@@ -7,6 +7,8 @@ import { LayoutComponent } from './layout/layout.component';
 import { TasksComponent } from './tasks/tasks.component';
 import { ProjectsComponent } from './projects/projects.component';
 import { ProjectDetailsComponent } from './projects/project-details/project-details.component';
+import { SalesComponent } from './sales/sales.component';
+import { SalesPipelineComponent } from './sales/sales-pipeline/sales-pipeline.component';
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
@@ -22,7 +24,15 @@ export const routes: Routes = [
       { path: 'profile', component: ProfileComponent },
       { path: 'tasks', component: TasksComponent },
       { path: 'projects', component: ProjectsComponent },
-      { path: 'projects/:id', component: ProjectDetailsComponent }
+      { path: 'projects/:id', component: ProjectDetailsComponent },
+      {
+        path: 'sales',
+        component: SalesComponent,
+        children: [
+          { path: '', redirectTo: 'pipeline', pathMatch: 'full' },
+          { path: 'pipeline', component: SalesPipelineComponent }
+        ]
+      }
     ]
   },
   { path: '**', redirectTo: '/login' }
