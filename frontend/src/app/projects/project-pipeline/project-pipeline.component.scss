@@ -1,177 +1,159 @@
-.pipeline-container {
+// Assumes global SCSS variables are available
+// @import '../../../styles.scss';
+
+.pipeline-view-wrapper { // Renamed from .pipeline-container
   display: flex;
   flex-direction: column;
-  height: 100%;
+  // Removed height: 100%, assuming parent or global styles manage view height
+  padding: 1.5rem; // Added padding for the overall view
+  gap: 1.5rem; // Space between title and board
 }
 
-.pipeline-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 20px;
+// H1 is styled globally, removed .pipeline-title
+
+.pipeline-board-scroll-container { // New wrapper for scroll
+  flex-grow: 1; // Allow this to take available height
+  overflow-x: auto; // Horizontal scroll for the board content
+  overflow-y: hidden; // Prevent vertical scroll on this container
+  padding-bottom: 1rem; // Space for scrollbar if needed
 }
 
-.pipeline-board {
+.pipeline-board-content { // Renamed from .pipeline-board
   display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  padding-bottom: 20px;
-  height: calc(100vh - 200px);
-  min-height: 500px;
+  gap: 1.5rem; // Consistent gap between stages
+  // Removed height, min-height. Height will be determined by content or parent flex.
+  // align-items: stretch; // If stages should be same height
 }
 
-.pipeline-column {
-  flex: 1;
-  min-width: 280px;
-  max-width: 350px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
+.pipeline-stage { // Renamed from .pipeline-column
+  flex: 0 0 300px; // Fixed width for stages (0 flex-shrink, 0 flex-grow, base width 300px)
+  // min-width: 280px; // Replaced by flex-basis
+  // max-width: 350px; // Replaced by flex-basis
+  background-color: lighten($subtle-borders, 7.5%); // Very light gray
+  border: 1px solid $subtle-borders;
+  border-radius: 0.25rem; // Standard border radius
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow: hidden; // Prevent content spill
+  box-shadow: none; // Remove shadow
 
-  &.status-active {
-    border-top: 4px solid #0070f3;
-    .column-header {
-      background-color: #e6f7ff;
-    }
-  }
-
-  &.status-on-hold {
-    border-top: 4px solid #fa8c16;
-    .column-header {
-      background-color: #fff7e6;
-    }
-  }
-
-  &.status-completed {
-    border-top: 4px solid #52c41a;
-    .column-header {
-      background-color: #f6ffed;
-    }
-  }
-
-  &.status-cancelled {
-    border-top: 4px solid #f5222d;
-    .column-header {
-      background-color: #fff1f0;
-    }
-  }
+  // Remove status-specific border-top and header background for minimalism
+  // &.stage-active, &.stage-on-hold, etc. { border-top: none; .stage-header { background-color: transparent; }}
 }
 
-.column-header {
-  padding: 15px;
+.stage-header { // Renamed from .column-header
+  padding: 1rem 1.25rem; // Consistent padding
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 1px solid $subtle-borders; // Use variable
 
   h2 {
     margin: 0;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 1.1rem; // Consistent with other panel/section headers
+    font-weight: 500; // Standard weight
+    // Global H2 styles are larger, this is more like an H4/H5
   }
 
-  .project-count {
-    background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    padding: 2px 8px;
-    font-size: 12px;
+  .stage-project-count { // Renamed from .project-count
+    background-color: $subtle-borders;
+    color: $secondary-text;
+    border-radius: 0.75rem; // Pill shape
+    padding: 0.1em 0.5em; // Small padding
+    font-size: 0.75rem; // Small font size
     font-weight: 500;
   }
 }
 
-.project-cards {
-  padding: 15px;
-  overflow-y: auto;
-  flex: 1;
+.stage-cards-list { // Renamed from .project-cards
+  padding: 1rem; // Padding around the list of cards
+  overflow-y: auto; // Allow vertical scroll for cards within a stage
+  flex: 1; // Allow card list to take available space in stage
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 1rem; // Consistent gap between cards
+  min-height: 100px; // Ensure drop zone is available even if empty
 }
 
-.project-card {
-  background-color: white;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  padding: 15px;
-  cursor: grab;
-  transition: transform 0.2s, box-shadow 0.2s;
+.kanban-card { // Renamed from .project-card
+  background-color: $background;
+  border: 1px solid $subtle-borders;
+  border-radius: 0.25rem;
+  box-shadow: none; // Remove shadow
+  padding: 1rem; // Consistent padding
+  cursor: grab; // Indicate draggable
+  transition: border-color 0.2s ease-in-out; // Subtle hover effect
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: darken($subtle-borders, 15%);
+    // transform: none; // Remove translateY
+    // box-shadow: none; // Ensure no shadow on hover
   }
 
-  &:active {
+  &:active, &.cdk-drag-preview { // Styling for card being dragged
     cursor: grabbing;
+    border-color: $primary-text; // Highlight while dragging
+    box-shadow: 0 2px 5px rgba($primary-text, 0.1); // Subtle shadow when lifted
   }
 }
 
-.project-header {
+.card-header { // Was .project-header (within card)
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10px;
+  align-items: flex-start; // Align title and actions
+  margin-bottom: 0.75rem;
 
-  .project-title {
-    font-weight: 600;
-    font-size: 16px;
-    word-break: break-word;
+  .card-title { // Was .project-title, now an H3
+    // Global H3 styles apply (font-size, weight)
+    margin: 0; // Remove default H3 margin
+    word-break: break-word; // Prevent long titles from breaking layout
     cursor: pointer;
+    color: $primary-text; // Ensure it uses primary text color
 
     &:hover {
-      color: #3498db;
+      color: darken($primary-text, 15%); // Standard link hover
       text-decoration: underline;
     }
   }
 
-  .project-actions {
+  .card-actions {
     display: flex;
-    gap: 5px;
+    gap: 0.25rem; // Small gap between icon buttons
+    // .btn.btn-icon styles applied from HTML
+  }
+}
 
-    .action-btn {
-      background: none;
-      border: none;
-      font-size: 14px;
-      cursor: pointer;
-      padding: 2px;
-      border-radius: 4px;
-      transition: background-color 0.2s;
+.card-meta-details { // Was .project-details
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem; // Consistent small font size for meta
 
-      &:hover {
-        background-color: #f5f5f5;
-      }
+  .meta-item { // Was .detail-item
+    display: flex;
+    // justify-content: space-between; // Can cause unevenness if values vary a lot
+    gap: 0.5rem; // Space between label and value
+    margin-bottom: 0.25rem; // Small margin between meta items
+
+    .meta-label { // Was .detail-label
+      color: $secondary-text;
+      font-weight: 400; // Normal weight
+      flex-shrink: 0; // Prevent label from shrinking
+    }
+
+    .meta-value { // Was .detail-value
+      color: $primary-text;
+      font-weight: 500; // Slightly bolder value
+      word-break: break-all; // Break long unbroken strings
     }
   }
 }
 
-.project-details {
-  margin-bottom: 10px;
-
-  .detail-item {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    margin-bottom: 5px;
-
-    .detail-label {
-      color: #666;
-      font-weight: 500;
-    }
-
-    .detail-value {
-      color: #333;
-    }
-  }
-}
-
-.project-description {
-  font-size: 13px;
-  color: #666;
-  margin-top: 10px;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 10px;
+.card-description { // Was .project-description
+  font-size: 0.875rem;
+  color: $secondary-text;
+  margin-top: 0.75rem;
+  border-top: 1px solid $subtle-borders; // Use variable
+  padding-top: 0.75rem;
+  // Line clamping preserved from original
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -179,10 +161,26 @@
   -webkit-box-orient: vertical;
 }
 
-.empty-column-message {
-  color: #999;
-  font-size: 14px;
+.empty-stage-message { // Was .empty-column-message
+  color: $secondary-text; // Use variable
+  font-size: 0.875rem; // Consistent small font size
   text-align: center;
-  padding: 20px 0;
+  padding: 1rem 0;
   font-style: italic;
+}
+
+// CDK Drag and Drop specific styles
+.cdk-drag-placeholder { // Style for the placeholder element when dragging
+  opacity: 0.3;
+  border: 2px dashed $subtle-borders;
+  background-color: lighten($subtle-borders, 7%);
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  // Ensure it takes up same space as card
+  .kanban-card { // Hide actual card content in placeholder
+    opacity: 0;
+  }
+}
+
+.cdk-drop-list-dragging .kanban-card:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }

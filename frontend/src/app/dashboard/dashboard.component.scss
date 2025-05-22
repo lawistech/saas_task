@@ -1,88 +1,67 @@
-.dashboard-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
+// Assumes global SCSS variables are available (e.g., $primary-text, $background, $subtle-borders)
+// @import '../../../styles.scss'; // Usually not needed in Angular CLI
 
-header {
+// Remove .dashboard-container styles - should be fully covered by global styles.
+// Remove .user-info styles - should be fully covered by global styles.
+// Remove .logout-btn styles - should be fully covered by global styles.
+// Remove .dashboard-content specific styles for text color and links - should use global p and a styles.
+
+// Styles for the local header within the dashboard component
+.dashboard-header-local { // Renamed in HTML from 'header' to avoid conflict if header tag is used elsewhere without this class
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 1.5rem; // Consistent spacing
+  padding-bottom: 1rem; // Consistent spacing
+  border-bottom: 1px solid $subtle-borders;
 
   h1 {
-    margin: 0;
-    color: #333;
+    margin: 0; // Keep margin 0 for h1 inside this local header
+    // color: $primary-text; // Inherited from body or .dashboard-container
+    // font-size and font-weight for h1 are global
   }
 }
 
 .header-actions {
   display: flex;
-  gap: 10px;
+  gap: 0.75rem; // Consistent spacing
 }
 
-.profile-btn {
-  display: inline-block;
-  background-color: #4a6cf7;
-  color: white;
-  text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-weight: 500;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: #3a5ce5;
-  }
-}
-
-.logout-btn {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+// Styles for the new .profile-action-btn (was .profile-btn)
+.profile-action-btn {
+  // Replicate primary button style from global 'button' styles
+  font-family: inherit;
+  font-size: 1rem; // Matches global button font size
+  padding: 0.75rem 1.5rem; // Matches global button padding
+  border-radius: 0.25rem; // Matches global button border-radius
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+
+  background-color: $primary-text;
+  color: $background;
+  border: 1px solid $primary-text;
+  text-decoration: none; // In case it's an <a> tag styled as a button elsewhere
 
   &:hover {
-    background-color: #e53935;
+    background-color: darken($primary-text, 10%);
+    border-color: darken($primary-text, 10%);
+    color: $background;
+  }
+
+  &:disabled { // Copied from global button:disabled style
+    background-color: lighten($secondary-text, 20%);
+    color: $secondary-text;
+    border-color: lighten($secondary-text, 20%);
+    cursor: not-allowed;
   }
 }
 
-.user-info {
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: #f9f9f9;
-  border-radius: 4px;
-
-  h2 {
-    margin-top: 0;
-    color: #333;
-  }
-
-  p {
-    margin-bottom: 0;
-    color: #666;
-  }
-}
-
-.dashboard-content {
-  line-height: 1.6;
-  color: #444;
-
-  a {
-    color: #4a6cf7;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
+// Any remaining styles for .dashboard-content would be for layout of *new* dashboard widgets/cards,
+// which are not present in the current HTML structure.
+// The existing p and a tags within .dashboard-content will use global styles.
+// .dashboard-content {
+//   // Example: if it became a grid/flex container for cards
+//   // display: grid;
+//   // grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+//   // gap: 1.5rem;
+// }

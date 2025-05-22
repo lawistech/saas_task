@@ -1,84 +1,94 @@
-<div class="projects-container">
-  <div class="projects-header">
-    <div class="header-left">
+<div class="projects-view-wrapper"> <!-- Renamed from projects-container for clarity that it's a view wrapper -->
+  <header class="projects-header"> <!-- Changed div to header for semantics -->
+    <div class="header-main-content"> <!-- New wrapper for H1 and view toggle -->
       <h1>Project Management</h1>
-      <div class="view-toggle">
+      <div class="view-toggle-group">
         <button
-          class="view-btn"
+          type="button"
+          class="btn-toggle"
           [class.active]="viewMode === 'list'"
           (click)="viewMode = 'list'; loadProjects(activeFilter || undefined)">
           <i class="icon">📋</i> List View
         </button>
         <button
-          class="view-btn"
+          type="button"
+          class="btn-toggle"
           [class.active]="viewMode === 'pipeline'"
           (click)="viewMode = 'pipeline'; loadProjects(activeFilter || undefined)">
           <i class="icon">📊</i> Pipeline View
         </button>
       </div>
     </div>
-    <button class="add-project-btn" (click)="openProjectForm()">
+    <button type="button" class="btn-add-project" (click)="openProjectForm()"> <!-- Standard button styling will apply, specific class for potential minor tweaks -->
       <i class="icon">➕</i> Add New Project
     </button>
-  </div>
+  </header>
 
-  <div class="filters">
+  <div class="filter-bar"> <!-- Renamed from filters for clarity -->
     <button
-      class="filter-btn"
+      type="button"
+      class="btn-filter"
       [class.active]="activeFilter === null"
       (click)="loadProjects()">
       All
     </button>
     <button
-      class="filter-btn"
+      type="button"
+      class="btn-filter"
       [class.active]="activeFilter === 'active'"
       (click)="loadProjects('active')">
       Active
     </button>
     <button
-      class="filter-btn"
+      type="button"
+      class="btn-filter"
       [class.active]="activeFilter === 'on_hold'"
       (click)="loadProjects('on_hold')">
       On Hold
     </button>
     <button
-      class="filter-btn"
+      type="button"
+      class="btn-filter"
       [class.active]="activeFilter === 'completed'"
       (click)="loadProjects('completed')">
       Completed
     </button>
     <button
-      class="filter-btn"
+      type="button"
+      class="btn-filter"
       [class.active]="activeFilter === 'cancelled'"
       (click)="loadProjects('cancelled')">
       Cancelled
     </button>
   </div>
 
-  <div *ngIf="isLoading" class="loading">
+  <div *ngIf="isLoading" class="loading-indicator"> <!-- Renamed from loading -->
     <p>Loading projects...</p>
+    <!-- Consider adding a spinner component here later -->
   </div>
 
-  <!-- List View -->
-  <app-project-list
-    *ngIf="!isLoading && viewMode === 'list'"
-    [projects]="projects"
-    (editProject)="openProjectForm($event)"
-    (deleteProject)="onProjectDeleted($event)"
-    (projectStatusChanged)="onProjectStatusChanged($event)">
-  </app-project-list>
+  <div class="projects-content-area"> <!-- Wrapper for views and no-projects message -->
+    <!-- List View -->
+    <app-project-list
+      *ngIf="!isLoading && viewMode === 'list'"
+      [projects]="projects"
+      (editProject)="openProjectForm($event)"
+      (deleteProject)="onProjectDeleted($event)"
+      (projectStatusChanged)="onProjectStatusChanged($event)">
+    </app-project-list>
 
-  <!-- Pipeline View -->
-  <app-project-pipeline
-    *ngIf="!isLoading && viewMode === 'pipeline'"
-    [projects]="projects"
-    (editProject)="openProjectForm($event)"
-    (deleteProject)="onProjectDeleted($event)"
-    (projectStatusChanged)="onProjectStatusChanged($event)">
-  </app-project-pipeline>
+    <!-- Pipeline View -->
+    <app-project-pipeline
+      *ngIf="!isLoading && viewMode === 'pipeline'"
+      [projects]="projects"
+      (editProject)="openProjectForm($event)"
+      (deleteProject)="onProjectDeleted($event)"
+      (projectStatusChanged)="onProjectStatusChanged($event)">
+    </app-project-pipeline>
 
-  <div *ngIf="!isLoading && projects.length === 0" class="no-projects">
-    <p>No projects found. Create a new project to get started!</p>
+    <div *ngIf="!isLoading && projects.length === 0" class="no-projects-message"> <!-- Renamed from no-projects -->
+      <p>No projects found. Create a new project to get started!</p>
+    </div>
   </div>
 
   <app-project-form

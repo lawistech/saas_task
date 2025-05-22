@@ -1,12 +1,16 @@
+// Import global variables if not automatically available (Angular usually handles this)
+// @import '../../../styles.scss'; // This line might not be needed
+
 .app-layout {
   display: flex;
-  height: 100vh;
+  min-height: 100vh; // Use min-height to allow content to expand the page if needed
   width: 100%;
+  background-color: $background; // Ensure the layout wrapper also uses the global background
 }
 
 .main-content {
   flex: 1;
-  padding: 20px;
+  padding: 1.5rem; // Consistent padding, adjust as needed (e.g., 2rem if more space is desired)
   overflow-y: auto;
-  background-color: #f5f7fb;
+  // background-color is inherited from .app-layout or body now, so remove specific one unless different
 }

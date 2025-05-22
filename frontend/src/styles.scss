@@ -1,116 +1,195 @@
 /* You can add global styles to this file, and also import other style files */
+
+// Color Palette
+$primary-text: #212529;
+$secondary-text: #6c757d; // Not used yet, but defined for future
+$background: #ffffff;
+$subtle-borders: #dee2e6; // Not used yet, but defined for future
+// $accent-color: #007bff; // Defined, but opting for monochrome first
+
+// Reset
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+// Base Element Styling
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: #333;
-  background-color: #f4f7f9;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px; // Base font size
+  line-height: 1.5;
+  color: $primary-text;
+  background-color: $background;
 }
 
-.login-container,
-.register-container,
-.dashboard-container {
-  max-width: 800px;
-  margin: 50px auto;
-  padding: 30px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+h1, h2, h3, h4, h5, h6 {
+  color: $primary-text;
+  margin-top: 1.5em; // Adjusted for better spacing
+  margin-bottom: 0.75em; // Adjusted for better spacing
+  font-weight: 500; // Default weight, can be adjusted per heading level if needed
 }
 
-h1, h2 {
-  margin-bottom: 20px;
-  color: #2c3e50;
+h1 {
+  font-size: 2.25rem; // Example size
+  font-weight: 400; // Lighter for larger headings
 }
 
+h2 {
+  font-size: 1.75rem; // Example size
+  font-weight: 400;
+}
+
+h3 {
+  font-size: 1.5rem; // Example size
+}
+
+p {
+  margin-bottom: 1rem; // Sensible default margin for paragraphs
+}
+
+a {
+  color: inherit; // Inherit color from parent
+  text-decoration: none;
+  transition: opacity 0.2s ease-in-out; // Subtle hover effect
+}
+
+a:hover {
+  opacity: 0.7; // Example hover effect, could be text-decoration: underline;
+  // text-decoration: underline; // Alternative hover
+}
+
+// Component-specific styles
+
+// Forms
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem; // Adjusted margin
 }
 
 label {
   display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
+  margin-bottom: 0.5rem; // Adjusted margin
+  font-weight: 500; // Kept as is, seems appropriate
+  color: $primary-text;
 }
 
-input {
+input, // Assuming text, password, email, etc.
+textarea,
+select { // General styling for form inputs
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
+  padding: 0.75rem 1rem;
+  border: 1px solid $subtle-borders;
+  border-radius: 0.25rem;
+  font-size: 1rem; // Consistent font size
+  font-family: inherit; // Inherit from body
+  color: $primary-text;
+  background-color: $background;
+  box-shadow: none; // Remove default browser shadow
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: $primary-text; // Or a slightly darker shade of $subtle-borders
+  box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.1);
 }
 
 button {
-  padding: 12px 20px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.25rem;
   cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+
+  // Default/Primary Button Style
+  background-color: $primary-text;
+  color: $background;
+  border: 1px solid $primary-text;
 }
 
 button:hover {
-  background-color: #2980b9;
+  background-color: darken($primary-text, 10%);
+  border-color: darken($primary-text, 10%);
+  color: $background; // Ensure text color remains contrasty on hover
 }
 
 button:disabled {
-  background-color: #95a5a6;
+  background-color: lighten($secondary-text, 20%);
+  color: $secondary-text;
+  border-color: lighten($secondary-text, 20%); // Or $subtle-borders
   cursor: not-allowed;
 }
 
+// Containers/Cards
+.login-container,
+.register-container,
+.dashboard-container {
+  max-width: 800px; // Existing value, seems reasonable
+  margin: 50px auto; // Existing value, seems reasonable
+  padding: 2rem; // Adjusted padding
+  background-color: $background;
+  border: 1px solid $subtle-borders;
+  border-radius: 0.25rem; // Consistent rounding
+  box-shadow: none; // Removed existing shadow for flatter look
+}
+
+// Utility Classes
 .error-message {
-  padding: 10px;
-  margin-bottom: 20px;
-  background-color: #f8d7da;
-  color: #721c24;
-  border-radius: 4px;
-}
-
-.register-link,
-.login-link {
-  margin-top: 20px;
-  text-align: center;
-}
-
-a {
-  color: #3498db;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.logout-btn {
-  background-color: #e74c3c;
-}
-
-.logout-btn:hover {
-  background-color: #c0392b;
+  background-color: lighten(#dc3545, 38%); // Adjusted for better readability from 35%
+  color: #dc3545;
+  border: 1px solid lighten(#dc3545, 25%);
+  padding: 1rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem; // Existing value, seems reasonable
 }
 
 .user-info {
-  margin-bottom: 30px;
-  padding: 20px;
-  background-color: #eaf2f8;
-  border-radius: 4px;
+  background-color: lighten($subtle-borders, 5%);
+  padding: 1rem;
+  border-radius: 0.25rem;
+  color: $primary-text;
+  margin-bottom: 1.5rem; // Consistent with form-group
 }
 
+.register-link, // These might need specific styling later or be removed
+.login-link {   // if components handle navigation differently
+  margin-top: 20px; // Existing, review if necessary
+  text-align: center; // Existing, review if necessary
+}
+
+// Navigation Elements
+header {
+  display: flex; // Existing
+  justify-content: space-between; // Existing
+  align-items: center; // Existing
+  background-color: $background;
+  border-bottom: 1px solid $subtle-borders;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem; // Consistent with other bottom margins
+  // Removed strong box-shadow if any (none was explicitly here before for header)
+}
+
+.logout-btn {
+  // Minimalist "danger" button style
+  background-color: transparent;
+  color: #dc3545; // Danger color
+  border: 1px solid #dc3545;
+  // Inherits padding, font-size, border-radius, transition from default button styles
+  // If specific padding/font-size is needed, it can be overridden here.
+  // For now, assume it should align with general button sizing.
+}
+
+.logout-btn:hover {
+  background-color: lighten(#dc3545, 38%);
+  color: #dc3545; // Keep text color
+  border-color: #dc3545; // Keep border color consistent on hover for this style
+}
+
+// .dashboard-content might need specific styling if its content changes significantly
+// For now, its line-height: 1.8 is kept.
 .dashboard-content {
-  line-height: 1.8;
+  line-height: 1.8; // Existing, review if it fits the new design
 }
