@@ -1,127 +1,124 @@
-<div class="project-details-container">
+<article class="project-details-view"> <!-- Renamed container -->
   <!-- Loading Indicator -->
-  <div *ngIf="isLoading" class="loading-indicator">
-    <div class="spinner"></div>
+  <div *ngIf="isLoading" class="loading-message-container"> <!-- Renamed -->
+    <div class="simple-spinner"></div> <!-- Simplified spinner -->
     <p>Loading project details...</p>
   </div>
 
-  <div *ngIf="!isLoading && project" class="project-content">
+  <div *ngIf="!isLoading && project" class="project-content-wrapper"> <!-- Renamed -->
     <!-- Header with back button and project name -->
-    <div class="project-header">
-      <div class="header-left">
-        <button class="back-btn" [routerLink]="['/projects']">
-          <i class="icon">←</i> Back to Projects
+    <header class="page-header project-page-header"> <!-- Changed to header, added BEM-like class -->
+      <div class="header-content-left"> <!-- Renamed -->
+        <button type="button" class="btn btn-secondary btn-icon-text" [routerLink]="['/projects']"> <!-- Standardized button -->
+          <span class="icon">←</span> Back to Projects
         </button>
-        <h1>{{ project.name }}</h1>
+        <h1>{{ project.name }}</h1> <!-- Should use global H1 style -->
       </div>
-      <div class="header-right">
-        <div class="status-badge" [ngClass]="getStatusClass(project.status)">
+      <div class="header-content-right"> <!-- Renamed -->
+        <span class="status-indicator" [ngClass]="getStatusClass(project.status)"> <!-- Changed div to span -->
           {{ getStatusLabel(project.status) }}
-        </div>
+        </span>
       </div>
-    </div>
+    </header>
 
-    <!-- Project Overview -->
-    <div class="project-overview">
-      <div class="overview-section">
+    <!-- Project Overview Layout -->
+    <div class="project-layout-grid">
+      <section class="details-card project-main-details"> <!-- Renamed -->
         <h2>Project Overview</h2>
-        <div class="overview-grid">
-          <div class="overview-item">
-            <span class="item-label">Description</span>
-            <span class="item-value">{{ project.description || 'No description provided' }}</span>
+        <div class="info-grid"> <!-- Renamed -->
+          <div class="info-item"> <!-- Renamed -->
+            <span class="info-label">Description</span>
+            <span class="info-value">{{ project.description || 'No description provided' }}</span>
           </div>
-          <div class="overview-item">
-            <span class="item-label">Client</span>
-            <span class="item-value">{{ project.client_name || 'Not specified' }}</span>
+          <div class="info-item">
+            <span class="info-label">Client</span>
+            <span class="info-value">{{ project.client_name || 'Not specified' }}</span>
           </div>
-          <div class="overview-item">
-            <span class="item-label">Client Email</span>
-            <span class="item-value">{{ project.client_email || 'Not specified' }}</span>
+          <div class="info-item">
+            <span class="info-label">Client Email</span>
+            <span class="info-value">{{ project.client_email || 'Not specified' }}</span>
           </div>
-          <div class="overview-item">
-            <span class="item-label">Budget</span>
-            <span class="item-value">{{ formatCurrency(project.budget) }}</span>
+          <div class="info-item">
+            <span class="info-label">Budget</span>
+            <span class="info-value">{{ formatCurrency(project.budget) }}</span>
           </div>
-          <div class="overview-item">
-            <span class="item-label">Start Date</span>
-            <span class="item-value">{{ formatDate(project.start_date) }}</span>
+          <div class="info-item">
+            <span class="info-label">Start Date</span>
+            <span class="info-value">{{ formatDate(project.start_date) }}</span>
           </div>
-          <div class="overview-item">
-            <span class="item-label">End Date</span>
-            <span class="item-value">{{ formatDate(project.end_date) }}</span>
+          <div class="info-item">
+            <span class="info-label">End Date</span>
+            <span class="info-value">{{ formatDate(project.end_date) }}</span>
           </div>
 
-          <!-- Custom Fields -->
           <ng-container *ngIf="project.custom_fields">
-            <div class="overview-item" *ngFor="let field of project.custom_fields | keyvalue">
-              <span class="item-label">{{ field.key }}</span>
-              <span class="item-value">{{ field.value || 'Not specified' }}</span>
+            <div class="info-item" *ngFor="let field of project.custom_fields | keyvalue">
+              <span class="info-label">{{ field.key }}</span>
+              <span class="info-value">{{ field.value || 'Not specified' }}</span>
             </div>
           </ng-container>
         </div>
-      </div>
+      </section>
 
-      <!-- Project Statistics -->
-      <div class="stats-section">
+      <aside class="stats-card project-sidebar-stats"> <!-- Changed to aside, Renamed -->
         <h2>Project Statistics</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-value">{{ taskCounts.total }}</div>
-            <div class="stat-label">Total Tasks</div>
+        <div class="stat-items-grid"> <!-- Renamed -->
+          <div class="stat-item"> <!-- Renamed -->
+            <div class="stat-item-value">{{ taskCounts.total }}</div>
+            <div class="stat-item-label">Total Tasks</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ taskCounts.pending }}</div>
-            <div class="stat-label">To Do</div>
+          <div class="stat-item">
+            <div class="stat-item-value">{{ taskCounts.pending }}</div>
+            <div class="stat-item-label">To Do</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ taskCounts.in_progress }}</div>
-            <div class="stat-label">In Progress</div>
+          <div class="stat-item">
+            <div class="stat-item-value">{{ taskCounts.in_progress }}</div>
+            <div class="stat-item-label">In Progress</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ taskCounts.completed }}</div>
-            <div class="stat-label">Completed</div>
+          <div class="stat-item">
+            <div class="stat-item-value">{{ taskCounts.completed }}</div>
+            <div class="stat-item-label">Completed</div>
           </div>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="progress-container">
-          <div class="progress-label">
+        <div class="progress-display"> <!-- Renamed -->
+          <div class="progress-info-label"> <!-- Renamed -->
             <span>Project Completion</span>
             <span>{{ getCompletionPercentage() }}%</span>
           </div>
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="getCompletionPercentage()"></div>
+          <div class="progress-bar-track"> <!-- Renamed -->
+            <div class="progress-bar-fill" [style.width.%]="getCompletionPercentage()"></div> <!-- Renamed -->
           </div>
         </div>
-      </div>
+      </aside>
     </div>
 
-    <!-- Tasks Section -->
-    <div class="tasks-section">
-      <div class="tasks-header">
+    <section class="project-tasks-area card-style"> <!-- Added card-style for common card appearance -->
+      <header class="tasks-area-header"> <!-- Renamed -->
         <h2>Project Tasks</h2>
-        <div class="tasks-controls">
-          <div class="view-toggle">
+        <div class="tasks-action-controls"> <!-- Renamed -->
+          <div class="view-toggle-group"> <!-- Renamed -->
             <button
-              class="view-btn"
+              type="button"
+              class="btn btn-toggle"
               [class.active]="viewMode === 'list'"
               (click)="switchView('list')">
-              <i class="icon">📋</i> List View
+              <span class="icon">📋</span> List View
             </button>
             <button
-              class="view-btn"
+              type="button"
+              class="btn btn-toggle"
               [class.active]="viewMode === 'pipeline'"
               (click)="switchView('pipeline')">
-              <i class="icon">📊</i> Pipeline View
+              <span class="icon">📊</span> Pipeline View
             </button>
           </div>
-          <button class="add-task-btn" (click)="openTaskForm()">
-            <i class="icon">➕</i> Add Task
+          <button type="button" class="btn btn-primary" (click)="openTaskForm()"> <!-- Standardized button -->
+            <span class="icon">➕</span> Add Task
           </button>
         </div>
-      </div>
+      </header>
 
-      <!-- Task List View -->
       <app-task-list
         *ngIf="viewMode === 'list'"
         [tasks]="tasks"
@@ -132,7 +129,6 @@
         (taskStatusChanged)="onTaskStatusChanged($event)">
       </app-task-list>
 
-      <!-- Task Pipeline View -->
       <app-task-pipeline
         *ngIf="viewMode === 'pipeline'"
         [tasks]="tasks"
@@ -141,13 +137,12 @@
         (taskStatusChanged)="onTaskStatusChanged($event)">
       </app-task-pipeline>
 
-      <div *ngIf="tasks.length === 0" class="no-tasks">
+      <div *ngIf="tasks.length === 0" class="no-tasks-message"> <!-- Renamed -->
         <p>No tasks found for this project. Create a new task to get started!</p>
       </div>
-    </div>
+    </section>
   </div>
 
-  <!-- Task Form -->
   <app-task-form
     *ngIf="showTaskForm"
     [task]="selectedTask"
@@ -156,12 +151,11 @@
     (saved)="onTaskSaved()">
   </app-task-form>
 
-  <!-- Error State -->
-  <div *ngIf="!isLoading && !project" class="error-state">
+  <div *ngIf="!isLoading && !project" class="error-message-container centered-message"> <!-- Renamed & added class -->
     <h2>Project Not Found</h2>
     <p>The project you're looking for doesn't exist or you don't have permission to view it.</p>
-    <button class="back-btn" [routerLink]="['/projects']">
-      <i class="icon">←</i> Back to Projects
+    <button type="button" class="btn btn-secondary" [routerLink]="['/projects']"> <!-- Standardized button -->
+      <span class="icon">←</span> Back to Projects
     </button>
   </div>
-</div>
+</article>

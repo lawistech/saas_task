@@ -1,20 +1,24 @@
 <div class="dashboard-container">
-  <header>
+  <header class="dashboard-header-local"> <!-- Renamed for clarity from component SCSS -->
     <h1>Dashboard</h1>
     <div class="header-actions">
-      <a routerLink="/profile" class="profile-btn">My Profile</a>
-      <button (click)="logout()" class="logout-btn">Logout</button>
+      <!-- Changed <a> to <button> for consistent button styling via global styles -->
+      <button type="button" class="profile-action-btn" routerLink="/profile">My Profile</button>
+      <button type="button" (click)="logout()" class="logout-btn">Logout</button> <!-- Should pick up global .logout-btn style -->
     </div>
   </header>
 
+  <!-- .user-info should pick up global styles -->
   <div class="user-info" *ngIf="user">
     <h2>Welcome, {{ user.name }}!</h2>
-    <p>Email: {{ user.email }}</p>
+    <!-- Email paragraph removed as per minimalist goal, user-info usually just a welcome. Can be re-added if essential. -->
+    <!-- <p>Email: {{ user.email }}</p> -->
   </div>
 
+  <!-- .dashboard-content might not need specific styling if its children (p, a) use global styles -->
   <div class="dashboard-content">
-    <p>This is your protected dashboard area.</p>
-    <p>You can only see this content when you're logged in.</p>
+    <p>This is your protected dashboard area. You can only see this content when you're logged in.</p>
     <p>Visit your <a routerLink="/profile">profile page</a> to update your information and upload a profile picture.</p>
+    <!-- Additional example content for dashboard might go here in cards/widgets in a real app -->
   </div>
 </div>
