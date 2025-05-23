@@ -1,66 +1,74 @@
-<div class="pipeline-view-wrapper"> <!-- Renamed -->
-  <h1>Project Pipeline</h1> <!-- Removed custom class, global H1 style applies -->
+<div class="flex flex-col p-4 sm:p-6 gap-6 h-full"> <!-- .pipeline-view-wrapper -->
+  <div class="flex justify-between items-center">
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 m-0">Project Pipeline</h1>
+    <!-- Add any header controls here, e.g., filters, if needed -->
+  </div>
 
-  <div class="pipeline-board-scroll-container"> <!-- Added for better scroll containment if needed -->
-    <div class="pipeline-board-content"> <!-- Renamed -->
-      <section *ngFor="let status of statusOrder"
-           class="pipeline-stage" <!-- Renamed and changed to section -->
-           [ngClass]="'stage-' + status.toLowerCase().replace('_', '-')" <!-- More BEM-like status class -->
-           (dragover)="onDragOver($event, status)"
-           (drop)="onDrop($event, status)">
+  <div class="flex-grow overflow-x-auto overflow-y-hidden pb-4"> <!-- .pipeline-board-scroll-container -->
+    <div class="flex gap-6 h-full" cdkDropListGroup> <!-- .pipeline-board-content -->
+      <div *ngFor="let stage of pipelineStages" cdkDropList [cdkDropListData]="stage.projects"
+           class="flex-shrink-0 w-72 sm:w-80 bg-gray-100 border border-gray-200 rounded-lg flex flex-col overflow-hidden shadow-sm h-full"> <!-- .pipeline-stage -->
+        <div class="py-3 px-4 flex justify-between items-center border-b border-gray-200"> <!-- .stage-header -->
+          <h2 class="text-base sm:text-lg font-semibold text-gray-700 m-0">{{ stage.name }}</h2>
+          <span class="bg-gray-200 text-gray-600 text-xs font-medium py-0.5 px-2 rounded-full">{{ stage.projects.length }}</span> <!-- .stage-project-count -->
+        </div>
 
-        <header class="stage-header"> <!-- Renamed and changed to header -->
-          <h2>{{ statusLabels[status] }}</h2> <!-- Global H2 style applies -->
-          <span class="stage-project-count">{{ groupedProjects[status].length }}</span> <!-- Renamed -->
-        </header>
+        <div class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col gap-4 min-h-[100px]" (cdkDropListDropped)="drop($event)"> <!-- .stage-cards-list -->
+          <div *ngFor="let project of stage.projects" cdkDrag
+               class="bg-white border border-gray-200 rounded-md shadow hover:border-gray-300 p-3 sm:p-4 cursor-grab active:cursor-grabbing"> <!-- .kanban-card -->
+            <div class="cdk-drag-preview bg-white border border-indigo-500 rounded-md shadow-xl p-3 sm:p-4"> <!-- .cdk-drag-preview -->
+                <div class="flex justify-between items-start mb-2 sm:mb-3">
+                    <h3 class="text-sm sm:text-base font-semibold text-gray-800 break-words m-0">{{ project.name }}</h3>
+                </div>
+                <div class="mb-2 sm:mb-3 text-xs sm:text-sm">
+                    <div class="flex gap-2 mb-0.5"><span class="text-gray-500">Due:</span> <span class="text-gray-700 font-medium break-all">{{ project.dueDate | date:'shortDate' }}</span></div>
+                </div>
+                <p class="text-xs sm:text-sm text-gray-600 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100 overflow-hidden text-ellipsis line-clamp-3">
+                    {{ project.description }}
+                </p>
+            </div>
 
-        <div class="stage-cards-list" cdkDropList [cdkDropListData]="groupedProjects[status]" (cdkDropListDropped)="onCardDrop($event)"> <!-- Renamed -->
-          <article *ngFor="let project of groupedProjects[status]"
-               class="kanban-card" <!-- Renamed and changed to article -->
-               draggable="true"
-               (dragstart)="onDragStart($event, project)"
-               (dragend)="onDragEnd()"
-               cdkDrag>
-
-            <header class="card-header"> <!-- Renamed and changed to header -->
-              <h3 class="card-title" (click)="viewProjectDetails(project)">{{ project.name }}</h3> <!-- Changed to H3 -->
-              <div class="card-actions">
-                <!-- Standardized buttons -->
-                <button type="button" class="btn btn-icon btn-view" (click)="viewProjectDetails(project)" aria-label="View details">👁️</button>
-                <button type="button" class="btn btn-icon btn-edit" (click)="onEditProject(project)" aria-label="Edit project">✏️</button>
-                <button type="button" class="btn btn-icon btn-delete" (click)="onDeleteProject(project.id)" aria-label="Delete project">🗑️</button>
-              </div>
-            </header>
-
-            <div class="card-meta-details"> <!-- Renamed -->
-              <div class="meta-item" *ngIf="project.client_name"> <!-- Renamed -->
-                <span class="meta-label">Client:</span> <!-- Renamed -->
-                <span class="meta-value">{{ project.client_name }}</span> <!-- Renamed -->
-              </div>
-              <div class="meta-item" *ngIf="project.budget">
-                <span class="meta-label">Budget:</span>
-                <span class="meta-value">{{ formatCurrency(project.budget) }}</span>
-              </div>
-              <div class="meta-item" *ngIf="project.start_date">
-                <span class="meta-label">Start:</span>
-                <span class="meta-value">{{ formatDate(project.start_date) }}</span>
-              </div>
-              <div class="meta-item" *ngIf="project.end_date">
-                <span class="meta-label">End:</span>
-                <span class="meta-value">{{ formatDate(project.end_date) }}</span>
+            <div class="cdk-drag-placeholder opacity-50 border-2 border-dashed border-gray-300 bg-gray-50 rounded-md"> <!-- .cdk-drag-placeholder -->
+              <div class="opacity-0"> <!-- Hide content in placeholder by making it transparent -->
+                <div class="flex justify-between items-start mb-2 sm:mb-3">
+                  <h3 class="text-sm sm:text-base font-semibold text-gray-800 break-words m-0">{{ project.name }}</h3>
+                </div>
               </div>
             </div>
 
-            <p class="card-description" *ngIf="project.description"> <!-- Changed to p -->
+            <!-- Actual card content -->
+            <div class="flex justify-between items-start mb-2 sm:mb-3"> <!-- .card-header -->
+              <h3 (click)="navigateToProject(project.id)"
+                  class="text-sm sm:text-base font-semibold text-gray-800 hover:text-indigo-600 hover:underline cursor-pointer break-words m-0"> <!-- h3.card-title -->
+                {{ project.name }}
+              </h3>
+              <div class="flex gap-1"> <!-- .card-actions -->
+                <button (click)="editProject(project.id, $event)" title="Edit" class="p-0.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 text-base sm:text-lg"><i class="fas fa-pencil-alt"></i></button>
+                <button (click)="deleteProject(project.id, $event)" title="Delete" class="p-0.5 rounded hover:bg-gray-100 text-gray-400 hover:text-red-500 text-base sm:text-lg"><i class="fas fa-trash-alt"></i></button>
+              </div>
+            </div>
+
+            <div class="mb-2 sm:mb-3 text-xs sm:text-sm"> <!-- .card-meta-details -->
+              <div class="flex gap-2 mb-0.5"> <!-- .meta-item -->
+                <span class="text-gray-500">Due:</span> <!-- .meta-label -->
+                <span class="text-gray-700 font-medium break-all">{{ project.dueDate | date:'shortDate' }}</span> <!-- .meta-value -->
+              </div>
+              <div class="flex gap-2 mb-0.5"> <!-- .meta-item -->
+                <span class="text-gray-500">Priority:</span> <!-- .meta-label -->
+                <span class="text-gray-700 font-medium break-all">{{ project.priority }}</span> <!-- .meta-value -->
+              </div>
+            </div>
+
+            <p *ngIf="project.description" class="text-xs sm:text-sm text-gray-600 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100 overflow-hidden text-ellipsis line-clamp-3"> <!-- .card-description -->
               {{ project.description }}
             </p>
-          </article>
-
-          <p *ngIf="groupedProjects[status].length === 0" class="empty-stage-message"> <!-- Renamed and changed to p -->
-            No projects in this status
-          </p>
+          </div>
+          <div *ngIf="stage.projects.length === 0" class="text-gray-400 text-xs sm:text-sm text-center py-4 italic"> <!-- .empty-stage-message -->
+            Drag projects here or create a new one.
+          </div>
         </div>
-      </section>
+      </div>
     </div>
   </div>
+  <app-project-form [project]="projectToEdit" [showModal]="showEditModal" (closeModal)="handleCloseModal()"></app-project-form>
 </div>

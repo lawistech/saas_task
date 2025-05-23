@@ -1,199 +1,119 @@
-<div class="form-modal-overlay"> <!-- Renamed -->
-  <div class="form-modal-panel"> <!-- Renamed -->
-    <header class="modal-header"> <!-- Changed to header -->
-      <h2>{{ formTitle }}</h2>
-      <!-- Standardized close button -->
-      <button type="button" class="btn btn-icon close-modal-btn" (click)="onCancel()" aria-label="Close form">✕</button>
+<div *ngIf="showModal" class="fixed inset-0 w-full h-full bg-gray-800 bg-opacity-30 flex justify-center items-center z-40 p-4">
+  <div class="w-full max-w-2xl max-h-[90vh] bg-white rounded-md border border-gray-200 overflow-y-auto flex flex-col shadow-xl" (click)="$event.stopPropagation()">
+    <header class="flex justify-between items-center py-4 px-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+      <h2 class="text-xl font-semibold text-gray-800 m-0">{{ (project && project.id) ? 'Edit Project' : 'Add New Project' }}</h2>
+      <button (click)="closeModal.emit()" class="p-1 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-700 text-2xl leading-none" aria-label="Close modal">
+        <i class="fas fa-times"></i>
+      </button>
     </header>
 
-    <form (ngSubmit)="onSubmit()" class="form-content-area"> <!-- Added class for padding -->
-      <div class="form-group">
-        <label for="project-form-name">Project Name *</label> <!-- Changed id for uniqueness -->
-        <input
-          type="text"
-          id="project-form-name"
-          name="name"
-          [(ngModel)]="formData.name"
-          required
-          placeholder="Enter project name">
+    <form [formGroup]="projectForm" (ngSubmit)="onSubmit()" class="p-6 flex flex-col gap-4">
+      <div *ngIf="errorMessage" class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-md mb-2">
+        {{ errorMessage }}
       </div>
 
       <div class="form-group">
-        <label for="project-form-description">Description</label> <!-- Changed id -->
-        <textarea
-          id="project-form-description"
-          name="description"
-          [(ngModel)]="formData.description"
-          rows="4"
-          placeholder="Enter project description"></textarea>
+        <label for="projectName" class="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+        <input id="projectName" type="text" formControlName="name"
+               class="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm placeholder:text-gray-400"
+               [ngClass]="{ 'border-red-500': submitted && projectForm.get('name')?.errors }">
+        <div *ngIf="submitted && projectForm.get('name')?.errors" class="text-red-600 text-xs mt-1">
+          <div *ngIf="projectForm.get('name')?.errors?.['required']">Project name is required.</div>
+        </div>
       </div>
 
-      <div class="form-row">
+      <div class="form-group">
+        <label for="projectDescription" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <textarea id="projectDescription" formControlName="description" rows="4"
+                  class="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm placeholder:text-gray-400"></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
         <div class="form-group">
-          <label for="project-form-status">Status</label> <!-- Changed id -->
-          <select id="project-form-status" name="status" [(ngModel)]="formData.status">
-            <option value="active">Active</option>
-            <option value="on_hold">On Hold</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
+          <label for="projectStatus" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <select id="projectStatus" formControlName="status"
+                  class="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+            <option *ngFor="let status of availableStatuses" [value]="status">{{ status }}</option>
           </select>
         </div>
 
-        <div class="form-group" *ngIf="!isSalesPipeline">
-          <label for="project-form-budget">Budget</label> <!-- Changed id -->
-          <input
-            type="number"
-            id="project-form-budget"
-            name="budget"
-            [(ngModel)]="formData.budget"
-            placeholder="Enter budget amount">
-        </div>
-
-        <div class="form-group" *ngIf="isSalesPipeline">
-          <label for="project-form-sales-stage">Sales Stage</label> <!-- Changed id -->
-          <select id="project-form-sales-stage" name="sales_stage" [(ngModel)]="formData.sales_stage">
-            <option *ngFor="let stage of salesStages" [value]="stage">{{ stage }}</option>
+        <div class="form-group">
+          <label for="projectPriority" class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+          <select id="projectPriority" formControlName="priority"
+                  class="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
           </select>
         </div>
       </div>
 
-      <div *ngIf="isSalesPipeline" class="sales-pipeline-fields"> <!-- Added wrapper for clarity -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="project-form-deal-value">Deal Value</label> <!-- Changed id -->
-            <input
-              type="number"
-              id="project-form-deal-value"
-              name="deal_value"
-              [(ngModel)]="formData.deal_value"
-              placeholder="Enter deal value">
-          </div>
-
-          <div class="form-group">
-            <label for="project-form-deal-owner">Deal Owner</label> <!-- Changed id -->
-            <input
-              type="text"
-              id="project-form-deal-owner"
-              name="deal_owner"
-              [(ngModel)]="formData.deal_owner"
-              placeholder="Enter deal owner">
-          </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+        <div class="form-group">
+          <label for="projectStartDate" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <input id="projectStartDate" type="date" formControlName="startDate"
+                 class="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm placeholder:text-gray-400">
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="project-form-expected-close-date">Expected Close Date</label> <!-- Changed id -->
-            <input
-              type="date"
-              id="project-form-expected-close-date"
-              name="expected_close_date"
-              [(ngModel)]="formData.expected_close_date">
-          </div>
-           <div class="form-group"></div> <!-- Empty div for spacing if needed, or remove if not -->
+        <div class="form-group">
+          <label for="projectDueDate" class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+          <input id="projectDueDate" type="date" formControlName="dueDate"
+                 class="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm placeholder:text-gray-400">
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="project-form-start-date">Start Date</label> <!-- Changed id -->
-          <input
-            type="date"
-            id="project-form-start-date"
-            name="start_date"
-            [(ngModel)]="formData.start_date">
-        </div>
-
-        <div class="form-group">
-          <label for="project-form-end-date">End Date</label> <!-- Changed id -->
-          <input
-            type="date"
-            id="project-form-end-date"
-            name="end_date"
-            [(ngModel)]="formData.end_date">
-        </div>
+      <div class="form-group">
+          <label for="projectBudget" class="block text-sm font-medium text-gray-700 mb-1">Budget ($)</label>
+          <input id="projectBudget" type="number" formControlName="budget"
+                 class="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm placeholder:text-gray-400">
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="project-form-client-name">Client Name</label> <!-- Changed id -->
-          <input
-            type="text"
-            id="project-form-client-name"
-            name="client_name"
-            [(ngModel)]="formData.client_name"
-            placeholder="Enter client name">
-        </div>
-
-        <div class="form-group">
-          <label for="project-form-client-email">Client Email</label> <!-- Changed id -->
-          <input
-            type="email"
-            id="project-form-client-email"
-            name="client_email"
-            [(ngModel)]="formData.client_email"
-            placeholder="Enter client email">
-        </div>
-      </div>
-
-      <section class="custom-fields-section"> <!-- Changed to section -->
-        <h3>Custom Fields</h3>
-        <div *ngFor="let key of customFieldKeys; let i = index" class="form-row custom-field-row">
-          <div class="form-group custom-field-key">
-            <label [for]="'project-form-custom_key_' + i">Field Name {{i+1}}</label> <!-- Changed id -->
-             <input
-                type="text"
-                [id]="'project-form-custom_key_' + i"
-                [value]="key"
-                readonly
-                placeholder="Field Name (e.g., Priority)">
+      <section class="custom-fields-section mt-6 pt-6 border-t border-gray-200" formArrayName="customFields">
+        <h3 class="text-lg font-medium text-gray-800 mb-4">Custom Fields</h3>
+        <div *ngFor="let customField of customFields.controls; let i=index" [formGroupName]="i" class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-x-6 gap-y-4 items-end mb-4">
+          <div class="form-group">
+            <label [for]="'customFieldName' + i" class="block text-sm font-medium text-gray-700 mb-1">Field Name</label>
+            <input [id]="'customFieldName' + i" type="text" formControlName="fieldName" placeholder="e.g., Client Contact"
+                   class="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm placeholder:text-gray-400 bg-gray-100 cursor-default" readonly>
           </div>
-          <div class="form-group custom-field-value">
-            <label [for]="'project-form-custom_value_' + i">Value for {{key}}</label> <!-- Changed id -->
-            <div class="input-with-action">
-              <input
-                type="text"
-                [id]="'project-form-custom_value_' + i"
-                [name]="'custom_value_' + key"
-                [(ngModel)]="formData.custom_fields![key]"
-                placeholder="Enter value">
-              <!-- Standardized remove button -->
-              <button type="button" class="btn btn-icon btn-danger-icon remove-custom-field-btn" (click)="removeCustomField(key)" aria-label="Remove custom field">✕</button>
-            </div>
+          <div class="form-group">
+            <label [for]="'customFieldValue' + i" class="block text-sm font-medium text-gray-700 mb-1">Field Value</label>
+            <input [id]="'customFieldValue' + i" type="text" formControlName="fieldValue" placeholder="Value"
+                   class="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm placeholder:text-gray-400">
           </div>
-        </div>
-
-        <div class="add-custom-field-controls"> <!-- Renamed -->
-          <h4>Add New Custom Field</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="project-form-new-custom-field-key">New Field Name</label> <!-- Changed id -->
-              <input
-                type="text"
-                id="project-form-new-custom-field-key"
-                [(ngModel)]="newCustomFieldKey"
-                name="newCustomFieldKey"
-                placeholder="Enter field name">
-            </div>
-            <div class="form-group">
-              <label for="project-form-new-custom-field-value">New Field Value</label> <!-- Changed id -->
-              <input
-                type="text"
-                id="project-form-new-custom-field-value"
-                [(ngModel)]="newCustomFieldValue"
-                name="newCustomFieldValue"
-                placeholder="Enter field value">
-            </div>
-          </div>
-          <!-- Standardized add button -->
-          <button type="button" class="btn btn-secondary add-custom-field-btn" (click)="addCustomField()">Add Custom Field</button>
+          <button type="button" (click)="removeCustomField(i)" title="Remove Field"
+                  class="p-1 rounded-full hover:bg-red-100 text-red-500 hover:text-red-700 text-xl leading-none h-[42px] w-[42px] flex items-center justify-center self-end mb-px border border-transparent hover:border-red-200">
+            <i class="fas fa-trash-alt"></i>
+          </button>
         </div>
       </section>
 
-      <div class="form-actions">
-        <!-- Standardized buttons -->
-        <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancel</button>
-        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Saving...' : (project ? 'Update Project' : 'Create Project') }}
+      <div class="add-custom-field-controls mt-4 pt-4 border-t border-gray-100">
+        <h4 class="text-md font-medium text-gray-700 mb-3">Add New Custom Field</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-x-6 gap-y-4 items-end">
+          <div class="form-group">
+            <label for="newCustomFieldName" class="block text-sm font-medium text-gray-700 mb-1">New Field Name</label>
+            <input id="newCustomFieldName" type="text" [(ngModel)]="newCustomFieldName" [ngModelOptions]="{standalone: true}" placeholder="e.g., Department"
+                   class="w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm placeholder:text-gray-400">
+          </div>
+           <div class="form-group"> <!-- Placeholder for value input, not strictly needed for just adding the key -->
+             <label class="block text-sm font-medium text-gray-700 mb-1 opacity-0 pointer-events-none">Add</label> <!-- Invisible label for alignment -->
+            <button type="button" (click)="addCustomField()"
+                    class="w-full py-2.5 px-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2">
+              <i class="fas fa-plus-circle"></i> Add Field
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+        <button type="button" (click)="closeModal.emit()"
+                class="py-2 px-4 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 rounded-md text-sm font-medium">
+          Cancel
+        </button>
+        <button type="submit" [disabled]="projectForm.invalid || submitting"
+                class="py-2 px-4 border border-transparent bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+          {{ submitting ? 'Saving...' : ((project && project.id) ? 'Save Changes' : 'Create Project') }}
         </button>
       </div>
     </form>

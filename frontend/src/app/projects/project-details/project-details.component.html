@@ -1,161 +1,142 @@
-<article class="project-details-view"> <!-- Renamed container -->
-  <!-- Loading Indicator -->
-  <div *ngIf="isLoading" class="loading-message-container"> <!-- Renamed -->
-    <div class="simple-spinner"></div> <!-- Simplified spinner -->
-    <p>Loading project details...</p>
+<div class="max-w-6xl mx-auto p-4 sm:p-6 flex flex-col gap-6"> <!-- .project-details-view -->
+
+  <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-8 text-center text-gray-500"> <!-- .loading-message-container -->
+    <div class="w-10 h-10 border-4 border-gray-100 border-t-gray-700 rounded-full animate-spin mb-4"></div> <!-- .simple-spinner -->
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">Loading Project Details...</h2>
+    <p class="mb-6">Please wait while we fetch the project information.</p>
   </div>
 
-  <div *ngIf="!isLoading && project" class="project-content-wrapper"> <!-- Renamed -->
-    <!-- Header with back button and project name -->
-    <header class="page-header project-page-header"> <!-- Changed to header, added BEM-like class -->
-      <div class="header-content-left"> <!-- Renamed -->
-        <button type="button" class="btn btn-secondary btn-icon-text" [routerLink]="['/projects']"> <!-- Standardized button -->
-          <span class="icon">←</span> Back to Projects
+  <div *ngIf="errorMessage && !isLoading" class="flex flex-col items-center justify-center p-8 text-center text-gray-500"> <!-- .error-message-container.centered-message -->
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">Could not load project</h2>
+    <p class="mb-6">{{ errorMessage }}</p>
+    <button routerLink="/projects" class="py-2 px-4 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 rounded-md text-sm font-medium">
+      Back to Projects
+    </button>
+  </div>
+
+  <div *ngIf="project && !isLoading && !errorMessage">
+    <header class="flex justify-between items-start pb-4 border-b border-gray-200"> <!-- .project-page-header -->
+      <div class="flex flex-col gap-2"> <!-- .header-content-left -->
+        <button routerLink="/projects" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 hover:underline">
+          <i class="fas fa-arrow-left"></i> Back to Projects
         </button>
-        <h1>{{ project.name }}</h1> <!-- Should use global H1 style -->
-      </div>
-      <div class="header-content-right"> <!-- Renamed -->
-        <span class="status-indicator" [ngClass]="getStatusClass(project.status)"> <!-- Changed div to span -->
-          {{ getStatusLabel(project.status) }}
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 m-0">{{ project.name }}</h1>
+        <span class="inline-block py-1 px-3 text-xs sm:text-sm font-semibold rounded-full"
+              [ngClass]="{
+                'bg-blue-100 text-blue-700': project.status === 'Active',
+                'bg-yellow-100 text-yellow-700': project.status === 'On Hold',
+                'bg-green-100 text-green-700': project.status === 'Completed',
+                'bg-red-100 text-red-700': project.status === 'Cancelled',
+                'bg-gray-100 text-gray-600': !['Active', 'On Hold', 'Completed', 'Cancelled'].includes(project.status)
+              }"> <!-- .status-indicator -->
+          {{ project.status }}
         </span>
+      </div>
+      <div class="header-content-right flex gap-2">
+        <button (click)="openEditModal()" class="py-2 px-4 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 rounded-md text-sm font-medium flex items-center gap-2">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+        <button (click)="confirmDeleteProject()" class="py-2 px-4 border border-transparent bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium flex items-center gap-2">
+            <i class="fas fa-trash-alt"></i> Delete
+        </button>
       </div>
     </header>
 
-    <!-- Project Overview Layout -->
-    <div class="project-layout-grid">
-      <section class="details-card project-main-details"> <!-- Renamed -->
-        <h2>Project Overview</h2>
-        <div class="info-grid"> <!-- Renamed -->
-          <div class="info-item"> <!-- Renamed -->
-            <span class="info-label">Description</span>
-            <span class="info-value">{{ project.description || 'No description provided' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Client</span>
-            <span class="info-value">{{ project.client_name || 'Not specified' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Client Email</span>
-            <span class="info-value">{{ project.client_email || 'Not specified' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Budget</span>
-            <span class="info-value">{{ formatCurrency(project.budget) }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Start Date</span>
-            <span class="info-value">{{ formatDate(project.start_date) }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">End Date</span>
-            <span class="info-value">{{ formatDate(project.end_date) }}</span>
-          </div>
-
-          <ng-container *ngIf="project.custom_fields">
-            <div class="info-item" *ngFor="let field of project.custom_fields | keyvalue">
-              <span class="info-label">{{ field.key }}</span>
-              <span class="info-value">{{ field.value || 'Not specified' }}</span>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6"> <!-- .project-layout-grid -->
+      <div class="lg:col-span-2 flex flex-col gap-6"> <!-- .project-main-details -->
+        <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm"> <!-- .details-card -->
+          <h2 class="text-xl font-semibold text-gray-800 mt-0 mb-4">Project Overview</h2>
+          <p class="text-sm text-gray-600 leading-relaxed mb-4">{{ project.description || 'No description provided.' }}</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4"> <!-- .info-grid -->
+            <div class="flex flex-col gap-0.5"> <!-- .info-item -->
+              <span class="text-xs sm:text-sm text-gray-500">Priority</span> <!-- .info-label -->
+              <span class="text-sm sm:text-base text-gray-800 font-medium break-words">{{ project.priority || 'N/A' }}</span> <!-- .info-value -->
             </div>
-          </ng-container>
+            <div class="flex flex-col gap-0.5"> <!-- .info-item -->
+              <span class="text-xs sm:text-sm text-gray-500">Start Date</span> <!-- .info-label -->
+              <span class="text-sm sm:text-base text-gray-800 font-medium break-words">{{ project.startDate | date:'mediumDate' || 'N/A' }}</span> <!-- .info-value -->
+            </div>
+            <div class="flex flex-col gap-0.5"> <!-- .info-item -->
+              <span class="text-xs sm:text-sm text-gray-500">Due Date</span> <!-- .info-label -->
+              <span class="text-sm sm:text-base text-gray-800 font-medium break-words">{{ project.dueDate | date:'mediumDate' || 'N/A' }}</span> <!-- .info-value -->
+            </div>
+            <div class="flex flex-col gap-0.5"> <!-- .info-item -->
+              <span class="text-xs sm:text-sm text-gray-500">Budget</span> <!-- .info-label -->
+              <span class="text-sm sm:text-base text-gray-800 font-medium break-words">{{ project.budget | currency:'USD':'symbol':'1.0-0' || 'N/A' }}</span> <!-- .info-value -->
+            </div>
+            <!-- Custom Fields Display -->
+            <ng-container *ngFor="let field of project.customFields">
+              <div class="flex flex-col gap-0.5"> <!-- .info-item -->
+                <span class="text-xs sm:text-sm text-gray-500">{{ field.fieldName }}</span> <!-- .info-label -->
+                <span class="text-sm sm:text-base text-gray-800 font-medium break-words">{{ field.fieldValue || 'N/A' }}</span> <!-- .info-value -->
+              </div>
+            </ng-container>
+          </div>
         </div>
-      </section>
+      </div>
 
-      <aside class="stats-card project-sidebar-stats"> <!-- Changed to aside, Renamed -->
-        <h2>Project Statistics</h2>
-        <div class="stat-items-grid"> <!-- Renamed -->
-          <div class="stat-item"> <!-- Renamed -->
-            <div class="stat-item-value">{{ taskCounts.total }}</div>
-            <div class="stat-item-label">Total Tasks</div>
+      <div class="flex flex-col gap-6"> <!-- Sidebar for stats and progress -->
+        <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm"> <!-- .stats-card -->
+          <h2 class="text-xl font-semibold text-gray-800 mt-0 mb-4">Project Stats</h2>
+          <div class="grid grid-cols-2 gap-4 mb-6"> <!-- .stat-items-grid -->
+            <div class="bg-gray-50 rounded-lg p-3 sm:p-4 text-center"> <!-- .stat-item -->
+              <p class="text-xl sm:text-2xl font-bold text-gray-800">{{ project.tasks?.length || 0 }}</p> <!-- .stat-item-value -->
+              <p class="text-xs sm:text-sm text-gray-500 mt-1">Total Tasks</p> <!-- .stat-item-label -->
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3 sm:p-4 text-center"> <!-- .stat-item -->
+              <p class="text-xl sm:text-2xl font-bold text-gray-800">{{ completedTasksCount || 0 }}</p> <!-- .stat-item-value -->
+              <p class="text-xs sm:text-sm text-gray-500 mt-1">Completed</p> <!-- .stat-item-label -->
+            </div>
           </div>
-          <div class="stat-item">
-            <div class="stat-item-value">{{ taskCounts.pending }}</div>
-            <div class="stat-item-label">To Do</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-item-value">{{ taskCounts.in_progress }}</div>
-            <div class="stat-item-label">In Progress</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-item-value">{{ taskCounts.completed }}</div>
-            <div class="stat-item-label">Completed</div>
-          </div>
-        </div>
-
-        <div class="progress-display"> <!-- Renamed -->
-          <div class="progress-info-label"> <!-- Renamed -->
-            <span>Project Completion</span>
-            <span>{{ getCompletionPercentage() }}%</span>
-          </div>
-          <div class="progress-bar-track"> <!-- Renamed -->
-            <div class="progress-bar-fill" [style.width.%]="getCompletionPercentage()"></div> <!-- Renamed -->
+          <div class="mt-4"> <!-- .progress-display -->
+            <div class="flex justify-between mb-1 text-xs sm:text-sm text-gray-500"> <!-- .progress-info-label -->
+              <span>Progress</span>
+              <span>{{ overallProgress | percent:'1.0-0' }}</span>
+            </div>
+            <div class="h-2 bg-gray-200 rounded-full overflow-hidden"> <!-- .progress-bar-track -->
+              <div class="h-full bg-gray-700 rounded-full transition-width duration-300 ease-in-out" [style.width]="overallProgress | percent:'1.0-0'"></div> <!-- .progress-bar-fill -->
+            </div>
           </div>
         </div>
-      </aside>
+      </div>
     </div>
 
-    <section class="project-tasks-area card-style"> <!-- Added card-style for common card appearance -->
-      <header class="tasks-area-header"> <!-- Renamed -->
-        <h2>Project Tasks</h2>
-        <div class="tasks-action-controls"> <!-- Renamed -->
-          <div class="view-toggle-group"> <!-- Renamed -->
-            <button
-              type="button"
-              class="btn btn-toggle"
-              [class.active]="viewMode === 'list'"
-              (click)="switchView('list')">
-              <span class="icon">📋</span> List View
-            </button>
-            <button
-              type="button"
-              class="btn btn-toggle"
-              [class.active]="viewMode === 'pipeline'"
-              (click)="switchView('pipeline')">
-              <span class="icon">📊</span> Pipeline View
-            </button>
+    <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm mt-6"> <!-- .project-tasks-area.card-style -->
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4"> <!-- .tasks-area-header -->
+        <h2 class="text-xl font-semibold text-gray-800 m-0">Tasks</h2>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"> <!-- .tasks-action-controls -->
+          <div class="flex gap-2"> <!-- .view-toggle-group -->
+            <button class="py-1.5 px-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-1">List</button>
+            <button class="py-1.5 px-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-1">Board</button>
           </div>
-          <button type="button" class="btn btn-primary" (click)="openTaskForm()"> <!-- Standardized button -->
-            <span class="icon">➕</span> Add Task
+          <button class="py-2 px-4 bg-gray-800 text-white rounded-md hover:bg-gray-900 text-sm font-medium flex items-center gap-2">
+            <i class="fas fa-plus"></i> Add Task
           </button>
         </div>
-      </header>
-
-      <app-task-list
-        *ngIf="viewMode === 'list'"
-        [tasks]="tasks"
-        [projectContext]="true"
-        [projectId]="projectId"
-        (editTask)="openTaskForm($event)"
-        (deleteTask)="onTaskDeleted($event)"
-        (taskStatusChanged)="onTaskStatusChanged($event)">
-      </app-task-list>
-
-      <app-task-pipeline
-        *ngIf="viewMode === 'pipeline'"
-        [tasks]="tasks"
-        (editTask)="openTaskForm($event)"
-        (deleteTask)="onTaskDeleted($event)"
-        (taskStatusChanged)="onTaskStatusChanged($event)">
-      </app-task-pipeline>
-
-      <div *ngIf="tasks.length === 0" class="no-tasks-message"> <!-- Renamed -->
-        <p>No tasks found for this project. Create a new task to get started!</p>
       </div>
-    </section>
+      <div class="text-center p-8 text-gray-500"> <!-- .no-tasks-message -->
+        <p>Task management functionality is not yet implemented for this view.</p>
+      </div>
+    </div>
   </div>
 
-  <app-task-form
-    *ngIf="showTaskForm"
-    [task]="selectedTask"
-    [projectId]="projectId"
-    (close)="closeTaskForm()"
-    (saved)="onTaskSaved()">
-  </app-task-form>
+  <!-- Project Form Modal -->
+  <app-project-form [project]="projectToEdit" [showModal]="showEditModal" (closeModal)="handleCloseModal()"></app-project-form>
 
-  <div *ngIf="!isLoading && !project" class="error-message-container centered-message"> <!-- Renamed & added class -->
-    <h2>Project Not Found</h2>
-    <p>The project you're looking for doesn't exist or you don't have permission to view it.</p>
-    <button type="button" class="btn btn-secondary" [routerLink]="['/projects']"> <!-- Standardized button -->
-      <span class="icon">←</span> Back to Projects
-    </button>
+  <!-- Confirmation Modal for Delete -->
+  <div *ngIf="showDeleteConfirmation" class="fixed inset-0 w-full h-full bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md text-center">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirm Deletion</h3>
+      <p class="text-sm text-gray-600 mb-6">Are you sure you want to delete the project "{{ project?.name }}"? This action cannot be undone.</p>
+      <div class="flex justify-center gap-4">
+        <button (click)="showDeleteConfirmation = false" class="py-2 px-4 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 rounded-md text-sm font-medium">
+          Cancel
+        </button>
+        <button (click)="deleteProjectConfirmed()" class="py-2 px-4 border border-transparent bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium">
+          Delete Project
+        </button>
+      </div>
+    </div>
   </div>
-</article>
+
+</div>
