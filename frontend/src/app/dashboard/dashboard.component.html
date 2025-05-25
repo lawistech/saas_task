@@ -1,42 +1,235 @@
-<div class="max-w-3xl mx-auto my-12 p-8 bg-white border border-gray-200 rounded-lg shadow-sm">
-  <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-    <h1 class="text-3xl font-semibold text-gray-800 m-0">Dashboard</h1>
-    <div class="flex space-x-3">
-      <button (click)="navigateToProfile()"
-              class="py-2 px-4 bg-gray-800 text-white rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-        View Profile
+<!-- Loading State -->
+<div *ngIf="isLoading" class="flex items-center justify-center min-h-[400px]">
+  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+</div>
+
+<!-- Dashboard Content -->
+<div *ngIf="!isLoading" class="dashboard-container">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div>
+      <h1 class="dashboard-title">Dashboard</h1>
+      <p class="text-gray-600 mt-1" *ngIf="user">Welcome back, {{ user.name }}!</p>
+    </div>
+    <div class="dashboard-actions">
+      <button (click)="navigateToProjects()"
+              class="btn btn-primary">
+        <i class="fas fa-folder mr-2"></i>
+        New Project
       </button>
-      <button (click)="logout()"
-              class="py-2 px-4 bg-transparent text-red-600 border border-red-600 rounded-md hover:bg-red-100 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-        Logout
+      <button (click)="navigateToTasks()"
+              class="btn btn-secondary">
+        <i class="fas fa-plus mr-2"></i>
+        New Task
       </button>
     </div>
-  </header>
+  </div>
 
-  <section *ngIf="user" class="bg-gray-100 p-4 rounded-md text-gray-800 mb-6">
-    <h2 class="text-xl font-medium text-gray-800 mb-2">Welcome, {{ user.name }}!</h2>
-    <p class="text-sm text-gray-600">Email: {{ user.email }}</p>
-    <p class="text-sm text-gray-600" *ngIf="user.role">Role: {{ user.role }}</p>
-  </section>
-
-  <section class="dashboard-content">
-    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Overview</h2>
-    <p class="text-gray-700 leading-relaxed mb-4">
-      This is your main dashboard area. From here you can get an overview of your account activity,
-      manage your settings, and access various features of the application.
-    </p>
-    <p class="text-gray-700 leading-relaxed mb-4">
-      Explore the navigation menu to find specific sections like <a routerLink="/users" class="text-indigo-600 hover:text-indigo-800 underline">User Management</a>
-      or your <a routerLink="/settings" class="text-indigo-600 hover:text-indigo-800 underline">Account Settings</a>.
-    </p>
-
-    <div class="mt-8 p-4 border border-dashed border-gray-300 rounded-md">
-      <h3 class="text-lg font-medium text-gray-700 mb-2">Quick Links</h3>
-      <ul class="list-disc list-inside space-y-1">
-        <li><a routerLink="/dashboard/analytics" class="text-indigo-600 hover:text-indigo-800">View Detailed Analytics</a></li>
-        <li><a routerLink="/dashboard/reports" class="text-indigo-600 hover:text-indigo-800">Generate Reports</a></li>
-        <li><a routerLink="/settings/preferences" class="text-indigo-600 hover:text-indigo-800">Update Preferences</a></li>
-      </ul>
+  <!-- Stats Grid -->
+  <div class="dashboard-grid mb-8">
+    <!-- Projects Stats -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3 class="card-title">Projects</h3>
+        <i class="fas fa-folder card-icon"></i>
+      </div>
+      <div class="card-content">
+        <div class="stat-number">{{ stats.totalProjects }}</div>
+        <div class="stat-label">Total Projects</div>
+        <div class="mt-4 space-y-2">
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-600">Active</span>
+            <span class="font-medium text-blue-600">{{ stats.activeProjects }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-600">Completed</span>
+            <span class="font-medium text-green-600">{{ stats.completedProjects }}</span>
+          </div>
+        </div>
+      </div>
     </div>
-  </section>
+
+    <!-- Tasks Stats -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3 class="card-title">Tasks</h3>
+        <i class="fas fa-tasks card-icon"></i>
+      </div>
+      <div class="card-content">
+        <div class="stat-number">{{ stats.totalTasks }}</div>
+        <div class="stat-label">Total Tasks</div>
+        <div class="mt-4 space-y-2">
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-600">Pending</span>
+            <span class="font-medium text-yellow-600">{{ stats.pendingTasks }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-600">In Progress</span>
+            <span class="font-medium text-blue-600">{{ stats.inProgressTasks }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-600">Completed</span>
+            <span class="font-medium text-green-600">{{ stats.completedTasks }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3 class="card-title">Quick Actions</h3>
+        <i class="fas fa-bolt card-icon"></i>
+      </div>
+      <div class="card-content">
+        <div class="space-y-3">
+          <button (click)="navigateToProjects()"
+                  class="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+            <div class="flex items-center">
+              <i class="fas fa-folder text-indigo-600 mr-3"></i>
+              <span class="font-medium">Manage Projects</span>
+            </div>
+          </button>
+          <button (click)="navigateToTasks()"
+                  class="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+            <div class="flex items-center">
+              <i class="fas fa-tasks text-indigo-600 mr-3"></i>
+              <span class="font-medium">View All Tasks</span>
+            </div>
+          </button>
+          <button (click)="navigateToProfile()"
+                  class="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+            <div class="flex items-center">
+              <i class="fas fa-user text-indigo-600 mr-3"></i>
+              <span class="font-medium">Update Profile</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Recent Projects -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3 class="card-title">Recent Projects</h3>
+        <button (click)="navigateToProjects()" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+          View All
+        </button>
+      </div>
+      <div class="card-content">
+        <div *ngIf="recentProjects.length === 0" class="text-center py-8 text-gray-500">
+          <i class="fas fa-folder-open text-4xl mb-4 text-gray-300"></i>
+          <p>No projects yet</p>
+          <button (click)="navigateToProjects()" class="mt-2 text-indigo-600 hover:text-indigo-800 font-medium">
+            Create your first project
+          </button>
+        </div>
+        <div *ngIf="recentProjects.length > 0" class="space-y-4">
+          <div *ngFor="let project of recentProjects"
+               class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer"
+               (click)="navigateToProject(project.id)">
+            <div class="flex-1">
+              <h4 class="font-medium text-gray-900">{{ project.name }}</h4>
+              <p class="text-sm text-gray-600 mt-1" *ngIf="project.description">
+                {{ project.description.length > 60 ? (project.description | slice:0:60) + '...' : project.description }}
+              </p>
+              <div class="flex items-center mt-2 space-x-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      [ngClass]="getStatusClass(project.status)">
+                  {{ project.status | titlecase }}
+                </span>
+                <span class="text-xs text-gray-500">{{ formatDate(project.created_at) }}</span>
+              </div>
+            </div>
+            <i class="fas fa-chevron-right text-gray-400"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Tasks -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3 class="card-title">Recent Tasks</h3>
+        <button (click)="navigateToTasks()" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+          View All
+        </button>
+      </div>
+      <div class="card-content">
+        <div *ngIf="recentTasks.length === 0" class="text-center py-8 text-gray-500">
+          <i class="fas fa-tasks text-4xl mb-4 text-gray-300"></i>
+          <p>No tasks yet</p>
+          <button (click)="navigateToTasks()" class="mt-2 text-indigo-600 hover:text-indigo-800 font-medium">
+            Create your first task
+          </button>
+        </div>
+        <div *ngIf="recentTasks.length > 0" class="space-y-4">
+          <div *ngFor="let task of recentTasks"
+               class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+            <div class="flex-1">
+              <h4 class="font-medium text-gray-900">{{ task.title }}</h4>
+              <p class="text-sm text-gray-600 mt-1" *ngIf="task.project">
+                Project: {{ task.project.name }}
+              </p>
+              <div class="flex items-center mt-2 space-x-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      [ngClass]="getStatusClass(task.status)">
+                  {{ task.status | titlecase }}
+                </span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      [ngClass]="getPriorityClass(task.priority)">
+                  {{ task.priority | titlecase }}
+                </span>
+                <span class="text-xs text-gray-500" *ngIf="task.due_date">
+                  Due: {{ formatDate(task.due_date) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Tasks -->
+  <div *ngIf="upcomingTasks.length > 0" class="mt-8">
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3 class="card-title">Upcoming Tasks (Next 7 Days)</h3>
+        <button (click)="navigateToTasks()" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+          View All
+        </button>
+      </div>
+      <div class="card-content">
+        <div class="space-y-4">
+          <div *ngFor="let task of upcomingTasks"
+               class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+            <div class="flex-1">
+              <h4 class="font-medium text-gray-900">{{ task.title }}</h4>
+              <p class="text-sm text-gray-600 mt-1" *ngIf="task.project">
+                Project: {{ task.project.name }}
+              </p>
+              <div class="flex items-center mt-2 space-x-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      [ngClass]="getStatusClass(task.status)">
+                  {{ task.status | titlecase }}
+                </span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      [ngClass]="getPriorityClass(task.priority)">
+                  {{ task.priority | titlecase }}
+                </span>
+                <span class="text-xs text-red-600 font-medium" *ngIf="task.due_date">
+                  <i class="fas fa-clock mr-1"></i>
+                  Due: {{ formatDate(task.due_date) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

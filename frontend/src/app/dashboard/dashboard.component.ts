@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { ProjectService } from '../services/project.service';
 import { TaskService } from '../services/task.service';
@@ -21,7 +21,7 @@ interface DashboardStats {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -119,6 +119,10 @@ export class DashboardComponent implements OnInit {
 
   navigateToProfile(): void {
     this.router.navigate(['/profile']);
+  }
+
+  navigateToProject(projectId: number): void {
+    this.router.navigate(['/projects', projectId]);
   }
 
   getStatusClass(status: string): string {

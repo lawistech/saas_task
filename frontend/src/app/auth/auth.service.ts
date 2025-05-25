@@ -28,11 +28,14 @@ export class AuthService {
 
     // Initialize the subjects only if in browser environment
     if (this.isBrowser) {
-      // Add a small delay to ensure localStorage is available
-      setTimeout(() => {
-        this.isAuthenticatedSubject.next(this.hasToken());
-        this.currentUserSubject.next(this.getUser());
-      }, 0);
+      // Initialize authentication state immediately
+      const hasToken = this.hasToken();
+      const user = this.getUser();
+
+      this.isAuthenticatedSubject.next(hasToken && !!user);
+      this.currentUserSubject.next(user);
+
+      console.log('AuthService: Initial auth state:', { hasToken, hasUser: !!user });
     }
   }
 
@@ -67,10 +70,14 @@ export class AuthService {
           response.user.profile_picture = this.baseUrl + response.user.profile_picture;
         }
 
+        // Set authentication data immediately
         this.setToken(response.token);
         this.setUser(response.user);
+
+        // Update authentication state immediately for faster redirect
         this.isAuthenticatedSubject.next(true);
         this.currentUserSubject.next(response.user);
+        console.log('AuthService: Authentication state updated successfully');
       }),
       tap({
         error: (error) => {
@@ -223,19 +230,22 @@ export class AuthService {
       const token = this.getToken();
       const user = this.getUser();
 
+      console.log('AuthService: Initializing auth state', { hasToken: !!token, hasUser: !!user });
+
       if (token && user) {
         // We have stored auth data, validate it
         this.validateToken().subscribe({
           next: () => {
-            console.log('AuthService: Existing session validated');
+            console.log('AuthService: Existing session validated successfully');
           },
           error: () => {
-            console.log('AuthService: Existing session invalid, clearing');
+            console.log('AuthService: Existing session invalid, clearing auth data');
             this.clearAuth();
           }
         });
       } else {
-        // No stored auth data
+        // No stored auth data, ensure clean state
+        console.log('AuthService: No existing session, clearing auth state');
         this.clearAuth();
       }
     }

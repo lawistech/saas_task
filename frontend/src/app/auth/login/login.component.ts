@@ -31,16 +31,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Check if user is already authenticated
-    this.authService.isAuthenticated$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(isAuthenticated => {
-        if (isAuthenticated) {
-          this.router.navigate(['/dashboard']);
-        }
-      });
-
-    // Check for success message from registration and store return URL
+    // Check for success message from registration and store return URL first
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
@@ -52,6 +43,17 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
         // Store return URL for redirect after login
         this.returnUrl = params['returnUrl'] || '/dashboard';
+        console.log('LoginComponent: Return URL set to:', this.returnUrl);
+      });
+
+    // Check if user is already authenticated
+    this.authService.isAuthenticated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isAuthenticated => {
+        if (isAuthenticated) {
+          console.log('LoginComponent: User already authenticated, redirecting to:', this.returnUrl);
+          this.router.navigate([this.returnUrl]);
+        }
       });
 
     this.loginForm = this.formBuilder.group({
@@ -89,14 +91,35 @@ export class LoginComponent implements OnInit, OnDestroy {
         next: () => {
           this.isLoading = false;
           this.successMessage = 'Login successful! Redirecting...';
+          console.log('LoginComponent: Login successful, redirecting to:', this.returnUrl);
 
-          // Immediate redirect for better UX
-          this.router.navigate([this.returnUrl]);
+          // Navigate immediately after successful login
+          this.router.navigate([this.returnUrl]).then((navigationSuccess) => {
+            if (navigationSuccess) {
+              console.log('LoginComponent: Navigation successful to:', this.returnUrl);
+            } else {
+              console.warn('LoginComponent: Navigation failed, trying fallback');
+              // Fallback navigation to dashboard
+              this.router.navigate(['/dashboard']).then(() => {
+                console.log('LoginComponent: Fallback navigation to dashboard successful');
+              }).catch(fallbackError => {
+                console.error('LoginComponent: Fallback navigation also failed:', fallbackError);
+              });
+            }
+          }).catch(error => {
+            console.error('LoginComponent: Navigation error:', error);
+            // Fallback navigation
+            this.router.navigate(['/dashboard']).then(() => {
+              console.log('LoginComponent: Fallback navigation to dashboard successful');
+            }).catch(fallbackError => {
+              console.error('LoginComponent: Fallback navigation also failed:', fallbackError);
+            });
+          });
         },
         error: (error) => {
           this.isLoading = false;
           this.errorMessage = this.getErrorMessage(error);
-          console.error('Login error:', error);
+          console.error('LoginComponent: Login error:', error);
         }
       });
   }
