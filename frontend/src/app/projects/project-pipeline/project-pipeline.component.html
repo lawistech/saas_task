@@ -6,14 +6,14 @@
 
   <div class="flex-grow overflow-x-auto overflow-y-hidden pb-4"> <!-- .pipeline-board-scroll-container -->
     <div class="flex gap-6 h-full" cdkDropListGroup> <!-- .pipeline-board-content -->
-      <div *ngFor="let stage of pipelineStages" cdkDropList [cdkDropListData]="stage.projects"
+      <div *ngFor="let stage of pipelineStages" cdkDropList [cdkDropListData]="stage.projects" (cdkDropListDropped)="drop($event)"
            class="flex-shrink-0 w-72 sm:w-80 bg-gray-100 border border-gray-200 rounded-lg flex flex-col overflow-hidden shadow-sm h-full"> <!-- .pipeline-stage -->
         <div class="py-3 px-4 flex justify-between items-center border-b border-gray-200"> <!-- .stage-header -->
           <h2 class="text-base sm:text-lg font-semibold text-gray-700 m-0">{{ stage.name }}</h2>
           <span class="bg-gray-200 text-gray-600 text-xs font-medium py-0.5 px-2 rounded-full">{{ stage.projects.length }}</span> <!-- .stage-project-count -->
         </div>
 
-        <div class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col gap-4 min-h-[100px]" (cdkDropListDropped)="drop($event)"> <!-- .stage-cards-list -->
+        <div class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col gap-4 min-h-[100px]"> <!-- .stage-cards-list -->
           <div *ngFor="let project of stage.projects" cdkDrag
                class="bg-white border border-gray-200 rounded-md shadow hover:border-gray-300 p-3 sm:p-4 cursor-grab active:cursor-grabbing"> <!-- .kanban-card -->
             <div class="cdk-drag-preview bg-white border border-indigo-500 rounded-md shadow-xl p-3 sm:p-4"> <!-- .cdk-drag-preview -->
@@ -21,7 +21,7 @@
                     <h3 class="text-sm sm:text-base font-semibold text-gray-800 break-words m-0">{{ project.name }}</h3>
                 </div>
                 <div class="mb-2 sm:mb-3 text-xs sm:text-sm">
-                    <div class="flex gap-2 mb-0.5"><span class="text-gray-500">Due:</span> <span class="text-gray-700 font-medium break-all">{{ project.dueDate | date:'shortDate' }}</span></div>
+                    <div class="flex gap-2 mb-0.5"><span class="text-gray-500">Due:</span> <span class="text-gray-700 font-medium break-all">{{ project.end_date | date:'shortDate' }}</span></div>
                 </div>
                 <p class="text-xs sm:text-sm text-gray-600 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100 overflow-hidden text-ellipsis line-clamp-3">
                     {{ project.description }}
@@ -43,19 +43,19 @@
                 {{ project.name }}
               </h3>
               <div class="flex gap-1"> <!-- .card-actions -->
-                <button (click)="editProject(project.id, $event)" title="Edit" class="p-0.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 text-base sm:text-lg"><i class="fas fa-pencil-alt"></i></button>
-                <button (click)="deleteProject(project.id, $event)" title="Delete" class="p-0.5 rounded hover:bg-gray-100 text-gray-400 hover:text-red-500 text-base sm:text-lg"><i class="fas fa-trash-alt"></i></button>
+                <button (click)="editProjectAction(project.id, $event)" title="Edit" class="p-0.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 text-base sm:text-lg"><i class="fas fa-pencil-alt"></i></button>
+                <button (click)="deleteProjectAction(project.id, $event)" title="Delete" class="p-0.5 rounded hover:bg-gray-100 text-gray-400 hover:text-red-500 text-base sm:text-lg"><i class="fas fa-trash-alt"></i></button>
               </div>
             </div>
 
             <div class="mb-2 sm:mb-3 text-xs sm:text-sm"> <!-- .card-meta-details -->
               <div class="flex gap-2 mb-0.5"> <!-- .meta-item -->
                 <span class="text-gray-500">Due:</span> <!-- .meta-label -->
-                <span class="text-gray-700 font-medium break-all">{{ project.dueDate | date:'shortDate' }}</span> <!-- .meta-value -->
+                <span class="text-gray-700 font-medium break-all">{{ project.end_date | date:'shortDate' }}</span> <!-- .meta-value -->
               </div>
               <div class="flex gap-2 mb-0.5"> <!-- .meta-item -->
-                <span class="text-gray-500">Priority:</span> <!-- .meta-label -->
-                <span class="text-gray-700 font-medium break-all">{{ project.priority }}</span> <!-- .meta-value -->
+                <span class="text-gray-500">Budget:</span> <!-- .meta-label -->
+                <span class="text-gray-700 font-medium break-all">{{ project.budget | currency:'USD':'symbol':'1.0-0' }}</span> <!-- .meta-value -->
               </div>
             </div>
 

@@ -15,6 +15,7 @@ export interface Project {
     deal_owner: string | null;
     expected_close_date: string | null;
     custom_fields?: Record<string, any> | null;
+    selected?: boolean;
     created_at: string;
     updated_at: string;
 }

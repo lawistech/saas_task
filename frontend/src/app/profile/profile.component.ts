@@ -1,14 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ProfileService } from './profile.service';
 import { AuthService } from '../auth/auth.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })
@@ -22,21 +24,18 @@ export class ProfileComponent implements OnInit {
   selectedFile: File | null = null;
   imagePreview: string | null = null;
 
-  profileForm = {
-    name: '',
-    email: '',
-    bio: '',
-    phone: '',
-    address: ''
-  };
+  profileForm!: FormGroup;
 
   constructor(
+    private formBuilder: FormBuilder,
     private profileService: ProfileService,
     private authService: AuthService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
+    this.initializeForm();
+
     this.authService.currentUser$.subscribe(user => {
       if (!user) {
         this.router.navigate(['/login']);
@@ -62,14 +61,26 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  initializeForm(): void {
+    this.profileForm = this.formBuilder.group({
+      name: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      bio: [''],
+      phone: [''],
+      address: ['']
+    });
+  }
+
   resetForm(): void {
-    this.profileForm = {
-      name: this.user.name || '',
-      email: this.user.email || '',
-      bio: this.user.bio || '',
-      phone: this.user.phone || '',
-      address: this.user.address || ''
-    };
+    if (this.user) {
+      this.profileForm.patchValue({
+        name: this.user.name || '',
+        email: this.user.email || '',
+        bio: this.user.bio || '',
+        phone: this.user.phone || '',
+        address: this.user.address || ''
+      });
+    }
   }
 
   toggleEdit(): void {
@@ -81,12 +92,21 @@ export class ProfileComponent implements OnInit {
     this.successMessage = '';
   }
 
-  onSubmit(): void {
+  // Alias for template compatibility
+  toggleEditMode(): void {
+    this.toggleEdit();
+  }
+
+  saveProfile(): void {
+    if (this.profileForm.invalid) {
+      return;
+    }
+
     this.isSaving = true;
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.profileService.updateProfile(this.profileForm).subscribe({
+    this.profileService.updateProfile(this.profileForm.value).subscribe({
       next: () => {
         this.isSaving = false;
         this.isEditing = false;
@@ -97,6 +117,11 @@ export class ProfileComponent implements OnInit {
         this.errorMessage = error.error.message || 'Failed to update profile';
       }
     });
+  }
+
+  // Alias for template compatibility
+  onSubmit(): void {
+    this.saveProfile();
   }
 
   onFileSelected(event: Event): void {
@@ -141,6 +166,24 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  // Alias for template compatibility
+  uploadProfilePicture(): void {
+    this.uploadImage();
+  }
+
+  // Property aliases for template compatibility
+  get imagePreviewUrl(): string | null {
+    return this.imagePreview;
+  }
+
+  get uploading(): boolean {
+    return this.isUploading;
+  }
+
+  get saving(): boolean {
+    return this.isSaving;
+  }
+
   cancelUpload(): void {
     this.selectedFile = null;
     this.imagePreview = null;
@@ -158,7 +201,8 @@ export class ProfileComponent implements OnInit {
     // it might be because the backend URL is not accessible from the frontend
     if (this.user.profile_picture && this.user.profile_picture.startsWith('/storage/')) {
       // Try to fix it by prepending the backend URL
-      const fixedUrl = 'http://localhost:8000' + this.user.profile_picture;
+      const baseUrl = environment.apiUrl.replace('/api', '');
+      const fixedUrl = baseUrl + this.user.profile_picture;
       console.log('Attempting to fix profile picture URL:', fixedUrl);
 
       // Update the user object with the fixed URL

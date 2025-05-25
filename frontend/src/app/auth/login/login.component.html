@@ -1,53 +1,126 @@
-<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
   <div class="sm:mx-auto sm:w-full sm:max-w-md">
-    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-      Sign in to your account
-    </h2>
+    <div class="text-center">
+      <div class="mx-auto h-12 w-12 bg-indigo-600 rounded-full flex items-center justify-center mb-4">
+        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        </svg>
+      </div>
+      <h2 class="text-3xl font-extrabold text-gray-900">
+        Welcome back
+      </h2>
+      <p class="mt-2 text-sm text-gray-600">
+        Sign in to your account to continue
+      </p>
+    </div>
   </div>
 
   <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-    <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <div *ngIf="errorMessage" class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-md mb-6">
-          {{ errorMessage }}
-        </div>
-
-        <div class="mb-6">
-          <label for="email" class="block mb-2 text-sm font-medium text-gray-700">Email address</label>
-          <input id="email" type="email" formControlName="email"
-                 class="w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                 [ngClass]="{ 'border-red-500': submitted && loginForm.get('email')?.errors }">
-          <div *ngIf="submitted && loginForm.get('email')?.errors" class="text-red-600 text-sm mt-1">
-            <div *ngIf="loginForm.get('email')?.errors?.['required']">Email is required.</div>
-            <div *ngIf="loginForm.get('email')?.errors?.['email']">Invalid email format.</div>
+    <div class="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10 border border-gray-200">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md mb-6 animate-fade-in">
+          <div class="flex">
+            <svg class="h-5 w-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            {{ successMessage }}
           </div>
         </div>
 
-        <div class="mb-6">
-          <label for="password" class="block mb-2 text-sm font-medium text-gray-700">Password</label>
-          <input id="password" type="password" formControlName="password"
-                 class="w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                 [ngClass]="{ 'border-red-500': submitted && loginForm.get('password')?.errors }">
-          <div *ngIf="submitted && loginForm.get('password')?.errors" class="text-red-600 text-sm mt-1">
-            <div *ngIf="loginForm.get('password')?.errors?.['required']">Password is required.</div>
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6 animate-fade-in">
+          <div class="flex">
+            <svg class="h-5 w-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+            </svg>
+            {{ errorMessage }}
           </div>
         </div>
 
         <div>
-          <button type="submit" [disabled]="loginForm.invalid"
-                  class="w-full py-3 px-4 bg-gray-800 text-white rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50">
-            Sign in
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email address</label>
+          <div class="relative">
+            <input id="email" type="email" formControlName="email" placeholder="Enter your email"
+                   class="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
+                   [ngClass]="{ 'border-red-500 focus:ring-red-500 focus:border-red-500': submitted && loginForm.get('email')?.errors }">
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <svg *ngIf="submitted && loginForm.get('email')?.errors" class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+          </div>
+          <div *ngIf="submitted && loginForm.get('email')?.errors" class="text-red-600 text-sm mt-1 animate-fade-in">
+            <div *ngIf="loginForm.get('email')?.errors?.['required']">Email is required.</div>
+            <div *ngIf="loginForm.get('email')?.errors?.['email']">Please enter a valid email address.</div>
+          </div>
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+          <div class="relative">
+            <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Enter your password"
+                   class="w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
+                   [ngClass]="{ 'border-red-500 focus:ring-red-500 focus:border-red-500': submitted && loginForm.get('password')?.errors }">
+            <button type="button" (click)="togglePasswordVisibility()"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center">
+              <svg *ngIf="!showPassword" class="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+              <svg *ngIf="showPassword" class="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+              </svg>
+            </button>
+          </div>
+          <div *ngIf="submitted && loginForm.get('password')?.errors" class="text-red-600 text-sm mt-1 animate-fade-in">
+            <div *ngIf="loginForm.get('password')?.errors?.['required']">Password is required.</div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <input id="remember-me" name="remember-me" type="checkbox" formControlName="rememberMe"
+                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+            <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+              Remember me
+            </label>
+          </div>
+
+          <div class="text-sm">
+            <a routerLink="/forgot-password" class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
+              Forgot your password?
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <button type="submit" [disabled]="isLoading || loginForm.invalid"
+                  class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105">
+            <svg *ngIf="isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isLoading ? 'Signing in...' : 'Sign in' }}
           </button>
         </div>
       </form>
 
-      <div class="mt-6 text-center text-sm text-gray-600">
-        <p>
-          Don't have an account?
-          <a routerLink="/auth/register" class="font-medium text-indigo-600 hover:text-indigo-500">
-            Register here
+      <div class="mt-6">
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500">New to our platform?</span>
+          </div>
+        </div>
+
+        <div class="mt-6 text-center">
+          <a routerLink="/register" class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
+            Create your account
           </a>
-        </p>
+        </div>
       </div>
     </div>
   </div>

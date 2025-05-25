@@ -1,0 +1,147 @@
+// Profile Component Styles
+
+.profile-container {
+  @apply max-w-3xl mx-auto p-5 sm:p-6 md:p-8 bg-white rounded-lg shadow-lg my-6;
+}
+
+.profile-header {
+  @apply flex justify-between items-center mb-6 pb-4 border-b border-gray-200;
+}
+
+.profile-title {
+  @apply text-2xl sm:text-3xl font-semibold text-gray-800 m-0;
+}
+
+.edit-btn {
+  @apply py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+}
+
+.error-message {
+  @apply bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-md mb-4;
+}
+
+.success-message {
+  @apply bg-green-50 border border-green-300 text-green-700 px-4 py-3 rounded-md mb-4;
+}
+
+.profile-content {
+  @apply flex flex-col md:flex-row gap-8 md:gap-12 mt-6;
+}
+
+.profile-picture-section {
+  @apply flex-1 flex flex-col items-center gap-4;
+}
+
+.profile-picture {
+  @apply w-36 h-36 sm:w-40 sm:h-40 rounded-full overflow-hidden border-4 border-gray-200 shadow-md;
+
+  img {
+    @apply w-full h-full object-cover;
+  }
+}
+
+.upload-section {
+  @apply text-center;
+}
+
+.file-input {
+  @apply hidden;
+}
+
+.file-label {
+  @apply inline-block py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md cursor-pointer text-sm font-medium border border-gray-300;
+}
+
+.upload-actions {
+  @apply flex gap-2 justify-center mt-2;
+}
+
+.btn-confirm {
+  @apply py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium disabled:bg-green-300;
+}
+
+.btn-cancel {
+  @apply py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm font-medium;
+}
+
+.profile-details {
+  @apply flex-[2_2_0%];
+}
+
+.form-group {
+  @apply mb-4;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.form-input {
+  @apply w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm;
+}
+
+.form-textarea {
+  @apply w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm;
+  resize: vertical;
+}
+
+.form-actions {
+  @apply flex items-center justify-end space-x-3;
+}
+
+.btn-secondary {
+  @apply py-2.5 px-5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium text-sm;
+}
+
+.save-btn {
+  @apply mt-0 w-auto py-2.5 px-5 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium disabled:bg-green-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500;
+}
+
+.detail-item {
+  @apply mb-4 flex items-center;
+}
+
+.label {
+  @apply text-sm font-semibold text-gray-600 w-20 sm:w-24 shrink-0;
+}
+
+.value {
+  @apply text-gray-800 text-sm;
+}
+
+.back-link {
+  @apply mt-8 text-center;
+
+  a {
+    @apply text-sm text-indigo-600 hover:text-indigo-800 hover:underline;
+  }
+}
+
+// Error states
+.form-input.error {
+  @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+}
+
+.error-text {
+  @apply text-red-600 text-xs mt-1;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .profile-content {
+    @apply flex-col gap-6;
+  }
+
+  .profile-picture {
+    @apply w-32 h-32;
+  }
+
+  .form-actions {
+    @apply flex-col space-x-0 space-y-3;
+  }
+
+  .save-btn,
+  .btn-secondary {
+    @apply w-full;
+  }
+}

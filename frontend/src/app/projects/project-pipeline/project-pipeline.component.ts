@@ -1,13 +1,15 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Project } from '../../models/project';
 import { ProjectService } from '../../services/project.service';
+import { ProjectFormComponent } from '../project-form/project-form.component';
 
 @Component({
   selector: 'app-project-pipeline',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DragDropModule, ProjectFormComponent],
   templateUrl: './project-pipeline.component.html',
   styleUrl: './project-pipeline.component.scss'
 })
@@ -27,6 +29,19 @@ export class ProjectPipelineComponent implements OnInit, OnChanges {
 
   statusOrder: string[] = ['active', 'on_hold', 'completed', 'cancelled'];
   draggedProject: Project | null = null;
+
+  // Additional properties for template
+  projectToEdit: Project | null = null;
+  showEditModal: boolean = false;
+
+  // Pipeline stages for template compatibility
+  get pipelineStages() {
+    return this.statusOrder.map(status => ({
+      name: this.statusLabels[status],
+      status: status,
+      projects: this.groupedProjects[status] || []
+    }));
+  }
 
   constructor(
     private projectService: ProjectService,
@@ -136,5 +151,63 @@ export class ProjectPipelineComponent implements OnInit, OnChanges {
 
   onDragEnd(): void {
     this.draggedProject = null;
+  }
+
+  // Additional methods for template compatibility
+  drop(event: CdkDragDrop<Project[]>): void {
+    if (event.previousContainer !== event.container) {
+      const project = event.previousContainer.data[event.previousIndex];
+      const newStatus = this.getStatusFromContainer(event.container);
+
+      if (newStatus && project.status !== newStatus) {
+        const validStatus = newStatus as 'active' | 'on_hold' | 'completed' | 'cancelled';
+        const updatedProject = { ...project, status: validStatus };
+        this.projectStatusChanged.emit(updatedProject);
+
+        // Update local state
+        project.status = validStatus;
+        this.groupProjectsByStatus();
+      }
+    }
+  }
+
+  private getStatusFromContainer(container: any): string | null {
+    // Extract status from container data or ID
+    const containerElement = container.element.nativeElement;
+    const stageElement = containerElement.closest('.pipeline-stage');
+    if (stageElement) {
+      const stageIndex = Array.from(stageElement.parentElement.children).indexOf(stageElement);
+      return this.statusOrder[stageIndex] || null;
+    }
+    return null;
+  }
+
+  navigateToProject(projectId: number): void {
+    this.router.navigate(['/projects', projectId]);
+  }
+
+  editProjectAction(projectId: number, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    const project = this.projects.find(p => p.id === projectId);
+    if (project) {
+      this.projectToEdit = project;
+      this.showEditModal = true;
+    }
+  }
+
+  deleteProjectAction(projectId: number, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (confirm('Are you sure you want to delete this project?')) {
+      this.deleteProject.emit(projectId);
+    }
+  }
+
+  handleCloseModal(): void {
+    this.showEditModal = false;
+    this.projectToEdit = null;
   }
 }

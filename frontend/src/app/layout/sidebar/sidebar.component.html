@@ -1,6 +1,6 @@
 <aside class="w-[260px] bg-gray-50 text-gray-800 flex flex-col border-r border-gray-200">
   <div class="p-4 border-b border-gray-200">
-    <h1 class="text-xl font-semibold">Admin Panel</h1>
+    <h1 class="text-xl font-semibold">Project Manager</h1>
   </div>
 
   <div class="p-4 flex items-center">
@@ -17,24 +17,31 @@
   <nav class="flex-grow">
     <ul class="space-y-1">
       <li>
-        <a routerLink="/dashboard" routerLinkActive="border-l-4 border-gray-800 font-semibold bg-gray-100"
-           class="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-          <i class="fas fa-tachometer-alt mr-3 w-5 text-center"></i>
+        <a routerLink="/dashboard" routerLinkActive="border-l-4 border-indigo-600 font-semibold bg-indigo-50"
+           class="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+          <i class="fas fa-tachometer-alt mr-3 w-5 text-center text-indigo-600"></i>
           Dashboard
         </a>
       </li>
       <li>
-        <a routerLink="/users" routerLinkActive="border-l-4 border-gray-800 font-semibold bg-gray-100"
-           class="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-          <i class="fas fa-users mr-3 w-5 text-center"></i>
-          Users
+        <a routerLink="/projects" routerLinkActive="border-l-4 border-indigo-600 font-semibold bg-indigo-50"
+           class="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+          <i class="fas fa-folder mr-3 w-5 text-center text-indigo-600"></i>
+          Projects
         </a>
       </li>
       <li>
-        <a routerLink="/settings" routerLinkActive="border-l-4 border-gray-800 font-semibold bg-gray-100"
-           class="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-          <i class="fas fa-cog mr-3 w-5 text-center"></i>
-          Settings
+        <a routerLink="/tasks" routerLinkActive="border-l-4 border-indigo-600 font-semibold bg-indigo-50"
+           class="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+          <i class="fas fa-tasks mr-3 w-5 text-center text-indigo-600"></i>
+          Tasks
+        </a>
+      </li>
+      <li>
+        <a routerLink="/profile" routerLinkActive="border-l-4 border-indigo-600 font-semibold bg-indigo-50"
+           class="flex items-center py-2 px-4 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+          <i class="fas fa-user mr-3 w-5 text-center text-indigo-600"></i>
+          Profile
         </a>
       </li>
     </ul>

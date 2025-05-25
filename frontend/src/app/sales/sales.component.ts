@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { SalesPipelineComponent } from './sales-pipeline/sales-pipeline.component';
 
 @Component({
   selector: 'app-sales',
   standalone: true,
-  imports: [CommonModule, RouterModule, SalesPipelineComponent],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="sales-container">
       <router-outlet></router-outlet>
@@ -20,5 +19,5 @@ import { SalesPipelineComponent } from './sales-pipeline/sales-pipeline.componen
   `]
 })
 export class SalesComponent {
-  
+
 }

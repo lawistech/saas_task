@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Project } from '../../models/project';
 import { ProjectService } from '../../services/project.service';
 import { PROJECT_DEFAULT_COLUMNS } from '../../models/project-column-config';
@@ -10,7 +11,7 @@ import { ColumnConfig } from '../../models/column-config';
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DragDropModule],
   templateUrl: './project-list.component.html',
   styleUrl: './project-list.component.scss'
 })
@@ -29,9 +30,15 @@ export class ProjectListComponent implements OnInit, OnChanges {
 
   columns: ColumnConfig[] = [];
   showColumnSettings: boolean = false;
+  showColumnSettingsPanel: boolean = false;
   draggedColumn: ColumnConfig | null = null;
   showAddColumnForm: boolean = false;
+  showAddColumnModal: boolean = false;
   newColumnName: string = '';
+  newColumn = { name: '', type: 'text' };
+  displayedColumnsConfig: ColumnConfig[] = [];
+  allSelected: boolean = false;
+  sortKey: string = '';
 
   private readonly STORAGE_KEY = 'project_table_columns';
 
@@ -42,6 +49,7 @@ export class ProjectListComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.loadColumnSettings();
+    this.displayedColumnsConfig = [...this.columns];
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -64,6 +72,7 @@ export class ProjectListComponent implements OnInit, OnChanges {
       this.columns = [...PROJECT_DEFAULT_COLUMNS];
     }
 
+    this.displayedColumnsConfig = [...this.columns];
     this.sortProjectsData();
   }
 
@@ -293,5 +302,109 @@ export class ProjectListComponent implements OnInit, OnChanges {
     }
 
     this.sortProjectsData();
+  }
+
+  // Additional methods for template compatibility
+  toggleColumnSettingsPanel(): void {
+    this.showColumnSettingsPanel = !this.showColumnSettingsPanel;
+  }
+
+  closeColumnSettingsPanel(): void {
+    this.showColumnSettingsPanel = false;
+  }
+
+  openAddColumnModal(): void {
+    this.showAddColumnModal = true;
+    this.newColumn = { name: '', type: 'text' };
+  }
+
+  closeAddColumnModal(): void {
+    this.showAddColumnModal = false;
+    this.newColumn = { name: '', type: 'text' };
+  }
+
+  addColumn(): void {
+    if (!this.newColumn.name.trim()) {
+      return;
+    }
+
+    const columnId = 'custom_' + this.newColumn.name.toLowerCase().replace(/\s+/g, '_');
+
+    if (this.columns.some(col => col.id === columnId)) {
+      alert('A column with this name already exists.');
+      return;
+    }
+
+    const newColumn: ColumnConfig = {
+      id: columnId,
+      name: this.newColumn.name,
+      visible: true,
+      order: this.columns.length,
+      width: '150px'
+    };
+
+    this.columns.push(newColumn);
+    this.columns = this.columns.sort((a, b) => a.order - b.order);
+    this.saveColumnSettings();
+    this.closeAddColumnModal();
+  }
+
+  onColumnDrop(event: any): void {
+    // Handle column reordering via drag and drop
+    const previousIndex = event.previousIndex;
+    const currentIndex = event.currentIndex;
+
+    if (previousIndex !== currentIndex) {
+      const movedColumn = this.displayedColumnsConfig[previousIndex];
+      this.displayedColumnsConfig.splice(previousIndex, 1);
+      this.displayedColumnsConfig.splice(currentIndex, 0, movedColumn);
+
+      // Update order values
+      this.displayedColumnsConfig.forEach((col, index) => {
+        col.order = index;
+      });
+
+      this.saveColumnSettings();
+    }
+  }
+
+  onRowSelect(project: Project): void {
+    // Handle individual row selection
+    this.updateSelectAllState();
+  }
+
+  private updateSelectAllState(): void {
+    const selectedCount = this.projects.filter(p => p.selected).length;
+    this.allSelected = selectedCount === this.projects.length && this.projects.length > 0;
+  }
+
+  sortData(key: string): void {
+    if (this.sortKey === key) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortKey = key;
+      this.sortDirection = 'asc';
+    }
+
+    this.sortField = key;
+    this.sortProjectsData();
+  }
+
+  onEditProjectClick(projectId: number): void {
+    const project = this.projects.find(p => p.id === projectId);
+    if (project) {
+      this.editProject.emit(project);
+    }
+  }
+
+  onDeleteProjectClick(projectId: number): void {
+    if (confirm('Are you sure you want to delete this project?')) {
+      this.deleteProject.emit(projectId);
+    }
+  }
+
+  getProjectValue(project: Project, col: ColumnConfig): any {
+    const key = col.key || col.id;
+    return (project as any)[key];
   }
 }

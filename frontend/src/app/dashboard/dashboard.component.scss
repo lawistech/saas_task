@@ -1,0 +1,57 @@
+// Dashboard Component Styles
+
+.dashboard-container {
+  @apply p-6;
+}
+
+.dashboard-header {
+  @apply flex justify-between items-center mb-6;
+}
+
+.dashboard-title {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.dashboard-actions {
+  @apply flex gap-3;
+}
+
+.dashboard-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+.dashboard-card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+}
+
+.card-header {
+  @apply flex items-center justify-between mb-4;
+}
+
+.card-title {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.card-icon {
+  @apply w-8 h-8 text-blue-600;
+}
+
+.card-content {
+  @apply text-gray-600;
+}
+
+.stat-number {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.stat-label {
+  @apply text-sm text-gray-500;
+}
+
+.btn-primary {
+  @apply px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+}

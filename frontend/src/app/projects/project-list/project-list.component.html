@@ -20,13 +20,12 @@
           <p class="text-xs text-gray-500 mb-3">Drag to reorder. Uncheck to hide.</p>
           <div class="flex flex-col gap-2" cdkDropList (cdkDropListDropped)="onColumnDrop($event)"> <!-- .column-config-list -->
             <div *ngFor="let col of displayedColumnsConfig; let i = index" cdkDrag [cdkDragData]="col"
-                 class="flex items-center p-2 rounded-md hover:bg-gray-50 cursor-grab"
-                 [ngClass]="{'opacity-50 border border-blue-500': cdkDrag && cdkDrag._isDragging()}"> <!-- .column-config-item, .dragging -->
+                 class="flex items-center p-2 rounded-md hover:bg-gray-50 cursor-grab"> <!-- .column-config-item -->
               <input type="checkbox" [checked]="col.visible" (change)="toggleColumnVisibility(col)"
                      class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mr-2"> <!-- .column-visibility-toggle, .form-checkbox -->
               <label (click)="$event.stopPropagation()" class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer flex-grow"> <!-- .column-config-label -->
                 <i class="fas fa-grip-vertical text-gray-400 text-md cursor-grab" cdkDragHandle></i> <!-- .drag-handle-icon -->
-                {{ col.label }}
+                {{ col.label || col.name }}
               </label>
             </div>
           </div>
@@ -77,11 +76,11 @@
                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"> <!-- .form-checkbox -->
           </th>
           <th *ngFor="let col of getVisibleColumns()"
-              (click)="col.sortable ? sortData(col.key) : null"
+              (click)="col.sortable ? sortData(col.key || col.id) : null"
               [ngClass]="{'cursor-pointer hover:bg-gray-100': col.sortable}"
               class="py-3 px-4 text-left border-b border-gray-200 align-middle bg-gray-50 font-semibold text-gray-600 select-none relative"> <!-- .sortable-header -->
-            {{ col.label }}
-            <span *ngIf="col.sortable && sortKey === col.key" class="ml-2 text-xs"> <!-- .sort-indicator -->
+            {{ col.label || col.name }}
+            <span *ngIf="col.sortable && sortKey === (col.key || col.id)" class="ml-2 text-xs"> <!-- .sort-indicator -->
               <i class="fas" [ngClass]="{'fa-arrow-up': sortDirection === 'asc', 'fa-arrow-down': sortDirection === 'desc'}"></i>
             </span>
           </th>
@@ -100,37 +99,38 @@
             <td *ngFor="let col of getVisibleColumns()"
                 class="py-3 px-4 text-left border-b border-gray-200 align-middle"
                 [ngClass]="{
-                  'min-w-[200px] font-medium text-gray-800': col.key === 'name',  /* .col-name */
-                  'text-right': col.key === 'budget' /* .col-budget */
+                  'min-w-[200px] font-medium text-gray-800': (col.key || col.id) === 'name',
+                  'text-right': (col.key || col.id) === 'budget'
                 }">
-              <ng-container [ngSwitch]="col.key">
+              <ng-container [ngSwitch]="col.key || col.id">
                 <span *ngSwitchCase="'status'"
                       class="inline-block py-0.5 px-2.5 text-xs font-medium rounded-full"
                       [ngClass]="{
-                        'bg-blue-100 text-blue-700': project[col.key] === 'Active',       /* .status-active */
-                        'bg-yellow-100 text-yellow-700': project[col.key] === 'On Hold', /* .status-on-hold */
-                        'bg-green-100 text-green-700': project[col.key] === 'Completed', /* .status-completed */
-                        'bg-red-100 text-red-700': project[col.key] === 'Cancelled',   /* .status-cancelled */
-                        'bg-gray-100 text-gray-600': !['Active', 'On Hold', 'Completed', 'Cancelled'].includes(project[col.key]) /* default */
+                        'bg-blue-100 text-blue-700': getProjectValue(project, col) === 'active',
+                        'bg-yellow-100 text-yellow-700': getProjectValue(project, col) === 'on_hold',
+                        'bg-green-100 text-green-700': getProjectValue(project, col) === 'completed',
+                        'bg-red-100 text-red-700': getProjectValue(project, col) === 'cancelled',
+                        'bg-gray-100 text-gray-600': !['active', 'on_hold', 'completed', 'cancelled'].includes(getProjectValue(project, col))
                       }"> <!-- .status-indicator -->
-                  {{ project[col.key] }}
+                  {{ getProjectValue(project, col) | titlecase }}
                 </span>
-                <span *ngSwitchCase="'dueDate'">{{ project[col.key] | date:'mediumDate' }}</span>
-                <span *ngSwitchCase="'budget'">{{ project[col.key] | currency:'USD':'symbol':'1.0-0' }}</span>
-                <span *ngSwitchDefault>{{ project[col.key] }}</span>
+                <span *ngSwitchCase="'start_date'">{{ getProjectValue(project, col) | date:'mediumDate' }}</span>
+                <span *ngSwitchCase="'end_date'">{{ getProjectValue(project, col) | date:'mediumDate' }}</span>
+                <span *ngSwitchCase="'budget'">{{ getProjectValue(project, col) | currency:'USD':'symbol':'1.0-0' }}</span>
+                <span *ngSwitchDefault>{{ getProjectValue(project, col) || '-' }}</span>
               </ng-container>
             </td>
 
             <td class="py-3 px-4 text-left border-b border-gray-200 align-middle w-auto text-center whitespace-nowrap"> <!-- .col-actions -->
-              <button (click)="viewProjectDetails(project.id)" title="View Details"
+              <button (click)="viewProjectDetails(project)" title="View Details"
                       class="p-1 rounded-md hover:bg-gray-200 text-gray-500 hover:text-gray-700 mx-0.5 text-lg"> <!-- .btn-icon -->
                 <i class="fas fa-eye"></i>
               </button>
-              <button (click)="editProject(project.id)" title="Edit Project"
+              <button (click)="onEditProjectClick(project.id)" title="Edit Project"
                       class="p-1 rounded-md hover:bg-gray-200 text-gray-500 hover:text-gray-700 mx-0.5 text-lg"> <!-- .btn-icon -->
                 <i class="fas fa-pencil-alt"></i>
               </button>
-              <button (click)="deleteProject(project.id)" title="Delete Project"
+              <button (click)="onDeleteProjectClick(project.id)" title="Delete Project"
                       class="p-1 rounded-md hover:bg-gray-200 text-red-500 hover:text-red-700 mx-0.5 text-lg"> <!-- .btn-icon (delete variant) -->
                 <i class="fas fa-trash-alt"></i>
               </button>
