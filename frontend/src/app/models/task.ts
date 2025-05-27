@@ -16,6 +16,9 @@ export interface Task {
     country_code?: string | null;
     progress?: number | null; // Progress percentage (0-100)
     budget?: number | null; // Budget amount
+    tags?: string[] | null; // Task tags
+    estimated_hours?: number | null; // Estimated hours to complete
+    actual_hours?: number | null; // Actual hours spent
     custom_fields?: Record<string, any> | null;
     assignee?: {
         id: number;

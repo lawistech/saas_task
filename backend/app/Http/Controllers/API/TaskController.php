@@ -46,7 +46,9 @@ class TaskController extends Controller
             $query->where('project_id', $projectId);
         }
 
-        $tasks = $query->orderBy('due_date', 'asc')->get();
+        $tasks = $query->with(['assignee:id,name,email,profile_picture', 'project:id,name'])
+                       ->orderBy('due_date', 'asc')
+                       ->get();
 
         // If group parameter is provided with value 'pipeline', group tasks by status
         if ($request->query('view') === 'pipeline') {
@@ -79,6 +81,10 @@ class TaskController extends Controller
             'country_code' => 'nullable|string|max:10',
             'progress' => 'nullable|integer|min:0|max:100',
             'budget' => 'nullable|numeric|min:0',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:255',
+            'estimated_hours' => 'nullable|numeric|min:0',
+            'actual_hours' => 'nullable|numeric|min:0',
             'custom_fields' => 'nullable|array',
         ]);
 
@@ -90,6 +96,7 @@ class TaskController extends Controller
         }
 
         $task = $request->user()->tasks()->create($request->all());
+        $task->load(['assignee:id,name,email,profile_picture', 'project:id,name']);
 
         return response()->json([
             'message' => 'Task created successfully',
@@ -109,6 +116,8 @@ class TaskController extends Controller
         if ($task->user_id !== auth()->id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
+
+        $task->load(['assignee:id,name,email,profile_picture', 'project:id,name']);
 
         return response()->json($task);
     }
@@ -141,6 +150,10 @@ class TaskController extends Controller
             'country_code' => 'nullable|string|max:10',
             'progress' => 'nullable|integer|min:0|max:100',
             'budget' => 'nullable|numeric|min:0',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:255',
+            'estimated_hours' => 'nullable|numeric|min:0',
+            'actual_hours' => 'nullable|numeric|min:0',
             'custom_fields' => 'nullable|array',
         ]);
 
@@ -152,6 +165,7 @@ class TaskController extends Controller
         }
 
         $task->update($request->all());
+        $task->load(['assignee:id,name,email,profile_picture', 'project:id,name']);
 
         return response()->json([
             'message' => 'Task updated successfully',

@@ -30,6 +30,9 @@ class Task extends Model
         'country_code',
         'progress',
         'budget',
+        'tags',
+        'estimated_hours',
+        'actual_hours',
         'custom_fields',
     ];
 
@@ -40,6 +43,7 @@ class Task extends Model
      */
     protected $casts = [
         'due_date' => 'datetime',
+        'tags' => 'array',
         'custom_fields' => 'array',
     ];
 

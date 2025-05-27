@@ -177,6 +177,50 @@
                 <span *ngIf="!task.project" class="text-gray-400">—</span>
               </span>
 
+              <!-- Updated Date -->
+              <span *ngIf="column.id === 'updated_at'" class="text-gray-600">
+                {{ formatDate(task.updated_at) }}
+              </span>
+
+              <!-- Tags -->
+              <div *ngIf="column.id === 'tags'" class="flex flex-wrap gap-1">
+                <span *ngFor="let tag of task.tags"
+                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ tag }}
+                </span>
+                <span *ngIf="!task.tags || task.tags.length === 0" class="text-gray-400 text-xs">—</span>
+              </div>
+
+              <!-- Estimated Hours -->
+              <span *ngIf="column.id === 'estimated_hours'" class="text-gray-600">
+                {{ task.estimated_hours ? (task.estimated_hours + 'h') : '—' }}
+              </span>
+
+              <!-- Actual Hours -->
+              <span *ngIf="column.id === 'actual_hours'" class="text-gray-600">
+                {{ task.actual_hours ? (task.actual_hours + 'h') : '—' }}
+              </span>
+
+              <!-- Group -->
+              <span *ngIf="column.id === 'group'" class="text-gray-600">
+                {{ task.group || '—' }}
+              </span>
+
+              <!-- Stage -->
+              <span *ngIf="column.id === 'stage'" class="text-gray-600">
+                {{ task.stage || '—' }}
+              </span>
+
+              <!-- Phone -->
+              <span *ngIf="column.id === 'phone'" class="text-gray-600">
+                {{ task.phone || '—' }}
+              </span>
+
+              <!-- Country Code -->
+              <span *ngIf="column.id === 'country_code'" class="text-gray-600">
+                {{ task.country_code || '—' }}
+              </span>
+
               <!-- Custom fields -->
               <span *ngIf="column.id.startsWith('custom_')" class="text-gray-500">
                 {{ getCustomFieldValue(task, column) || '—' }}

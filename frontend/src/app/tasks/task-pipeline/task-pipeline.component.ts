@@ -20,12 +20,15 @@ export class TaskPipelineComponent implements OnInit, OnChanges {
 
   groupedTasks: Record<string, Task[]> = {};
   statusLabels: Record<string, string> = {
+    'not_started': 'Not Started',
     'pending': 'To Do',
     'in_progress': 'In Progress',
-    'completed': 'Completed'
+    'in_review': 'In Review',
+    'completed': 'Completed',
+    'done': 'Done'
   };
 
-  statusOrder: string[] = ['pending', 'in_progress', 'completed'];
+  statusOrder: string[] = ['not_started', 'pending', 'in_progress', 'in_review', 'completed', 'done'];
   draggedTask: Task | null = null;
   selectedTask: Task | null = null;
 
@@ -87,9 +90,12 @@ export class TaskPipelineComponent implements OnInit, OnChanges {
 
   getStatusClass(status: string): string {
     switch (status) {
+      case 'not_started': return 'status-not-started';
       case 'pending': return 'status-pending';
       case 'in_progress': return 'status-in-progress';
+      case 'in_review': return 'status-in-review';
       case 'completed': return 'status-completed';
+      case 'done': return 'status-done';
       default: return '';
     }
   }
@@ -137,22 +143,20 @@ export class TaskPipelineComponent implements OnInit, OnChanges {
     if (this.draggedTask && this.draggedTask.status !== status) {
       const updatedTask: Partial<Task> = {
         ...this.draggedTask,
-        status: status as 'pending' | 'in_progress' | 'completed'
+        status: status as 'pending' | 'in_progress' | 'completed' | 'not_started' | 'in_review' | 'done'
       };
 
-      // If status is completed and stage is not set to Deployed, update it
-      if (status === 'completed' && updatedTask.stage !== 'Deployed') {
+      // Update stage based on status
+      if (status === 'completed' || status === 'done') {
         updatedTask.stage = 'Deployed';
-      }
-
-      // If status is in_progress and stage is not set to Development, update it
-      if (status === 'in_progress' && updatedTask.stage !== 'Development') {
+      } else if (status === 'in_progress') {
         updatedTask.stage = 'Development';
-      }
-
-      // If status is pending and stage is not set to Planning, update it
-      if (status === 'pending' && updatedTask.stage !== 'Planning') {
+      } else if (status === 'in_review') {
+        updatedTask.stage = 'Review';
+      } else if (status === 'pending') {
         updatedTask.stage = 'Planning';
+      } else if (status === 'not_started') {
+        updatedTask.stage = 'Lead';
       }
 
       this.taskService.updateTask(this.draggedTask.id, updatedTask).subscribe({
@@ -169,5 +173,45 @@ export class TaskPipelineComponent implements OnInit, OnChanges {
 
   onDragEnd(): void {
     this.draggedTask = null;
+  }
+
+  // Helper methods for template
+  getInitials(name: string): string {
+    return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().substring(0, 2);
+  }
+
+  getAssigneeColor(name: string): string {
+    const colors = [
+      'bg-blue-500', 'bg-emerald-500', 'bg-purple-500', 'bg-pink-500',
+      'bg-indigo-500', 'bg-amber-500', 'bg-red-500', 'bg-teal-500',
+      'bg-cyan-500', 'bg-violet-500', 'bg-rose-500', 'bg-orange-500'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      const char = name.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+  }
+
+  formatDate(date: string | null): string {
+    if (!date) return 'No date';
+    return new Date(date).toLocaleDateString();
+  }
+
+  isOverdue(dueDate: string | null): boolean {
+    if (!dueDate) return false;
+    return new Date(dueDate) < new Date();
+  }
+
+  isDueSoon(dueDate: string | null): boolean {
+    if (!dueDate) return false;
+    const due = new Date(dueDate);
+    const today = new Date();
+    const diffTime = due.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 3 && diffDays > 0;
   }
 }

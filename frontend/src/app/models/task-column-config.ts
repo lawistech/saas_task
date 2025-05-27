@@ -120,14 +120,102 @@ export const TASK_DEFAULT_COLUMNS: TaskColumnConfig[] = [
     dataType: 'date'
   },
   {
+    id: 'updated_at',
+    name: 'Updated',
+    key: 'updated_at',
+    label: 'Updated',
+    visible: false,
+    order: 10,
+    width: '120px',
+    sortable: true,
+    dataType: 'date'
+  },
+  {
     id: 'project',
     name: 'Project',
     key: 'project',
     label: 'Project',
     visible: false,
-    order: 10,
+    order: 11,
     width: '140px',
     sortable: true
+  },
+  {
+    id: 'tags',
+    name: 'Tags',
+    key: 'tags',
+    label: 'Tags',
+    visible: false,
+    order: 12,
+    width: '160px',
+    sortable: false,
+    dataType: 'text'
+  },
+  {
+    id: 'estimated_hours',
+    name: 'Est. Hours',
+    key: 'estimated_hours',
+    label: 'Estimated Hours',
+    visible: false,
+    order: 13,
+    width: '100px',
+    sortable: true,
+    dataType: 'number'
+  },
+  {
+    id: 'actual_hours',
+    name: 'Act. Hours',
+    key: 'actual_hours',
+    label: 'Actual Hours',
+    visible: false,
+    order: 14,
+    width: '100px',
+    sortable: true,
+    dataType: 'number'
+  },
+  {
+    id: 'group',
+    name: 'Group',
+    key: 'group',
+    label: 'Group',
+    visible: false,
+    order: 15,
+    width: '120px',
+    sortable: true,
+    dataType: 'text'
+  },
+  {
+    id: 'stage',
+    name: 'Stage',
+    key: 'stage',
+    label: 'Stage',
+    visible: false,
+    order: 16,
+    width: '120px',
+    sortable: true,
+    dataType: 'text'
+  },
+  {
+    id: 'phone',
+    name: 'Phone',
+    key: 'phone',
+    label: 'Phone',
+    visible: false,
+    order: 17,
+    width: '140px',
+    sortable: false,
+    dataType: 'text'
+  },
+  {
+    id: 'country_code',
+    name: 'Country',
+    key: 'country_code',
+    label: 'Country Code',
+    visible: false,
+    order: 18,
+    width: '100px',
+    sortable: true,
+    dataType: 'text'
   },
   {
     id: 'actions',

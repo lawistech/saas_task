@@ -262,6 +262,40 @@ export class TaskTableComponent implements OnInit, OnChanges {
     }
   }
 
+  editEstimatedHours(task: Task): void {
+    const newHours = prompt('Enter estimated hours:', (task.estimated_hours || 0).toString());
+    if (newHours !== null) {
+      const estimated_hours = parseFloat(newHours) || 0;
+      const updatedTask = { ...task, estimated_hours };
+      this.taskStatusChanged.emit(updatedTask);
+    }
+  }
+
+  editActualHours(task: Task): void {
+    const newHours = prompt('Enter actual hours:', (task.actual_hours || 0).toString());
+    if (newHours !== null) {
+      const actual_hours = parseFloat(newHours) || 0;
+      const updatedTask = { ...task, actual_hours };
+      this.taskStatusChanged.emit(updatedTask);
+    }
+  }
+
+  editGroup(task: Task): void {
+    const newGroup = prompt('Enter group:', task.group || '');
+    if (newGroup !== null) {
+      const updatedTask = { ...task, group: newGroup.trim() || null };
+      this.taskStatusChanged.emit(updatedTask);
+    }
+  }
+
+  editStage(task: Task): void {
+    const newStage = prompt('Enter stage:', task.stage || '');
+    if (newStage !== null) {
+      const updatedTask = { ...task, stage: newStage.trim() || null };
+      this.taskStatusChanged.emit(updatedTask);
+    }
+  }
+
   toggleActionMenu(taskId: number): void {
     this.activeActionMenu = this.activeActionMenu === taskId ? null : taskId;
   }
@@ -304,7 +338,11 @@ export class TaskTableComponent implements OnInit, OnChanges {
   }
 
   private generateCSV(): string {
-    const headers = ['Title', 'Description', 'Status', 'Priority', 'Assignee', 'Due Date', 'Progress', 'Budget'];
+    const headers = [
+      'Title', 'Description', 'Status', 'Priority', 'Assignee', 'Due Date', 'Progress', 'Budget',
+      'Project', 'Tags', 'Estimated Hours', 'Actual Hours', 'Group', 'Stage', 'Phone', 'Country Code',
+      'Created', 'Updated'
+    ];
     const rows = this.sortedTasks.map(task => [
       task.title,
       task.description || '',
@@ -313,7 +351,17 @@ export class TaskTableComponent implements OnInit, OnChanges {
       task.assignee?.name || 'Unassigned',
       task.due_date || '',
       (task.progress || 0).toString(),
-      (task.budget || 0).toString()
+      (task.budget || 0).toString(),
+      this.getProjectName(task.project_id || 0),
+      task.tags?.join(', ') || '',
+      (task.estimated_hours || 0).toString(),
+      (task.actual_hours || 0).toString(),
+      task.group || '',
+      task.stage || '',
+      task.phone || '',
+      task.country_code || '',
+      this.formatDate(task.created_at),
+      this.formatDate(task.updated_at)
     ]);
 
     return [headers, ...rows].map(row =>
@@ -331,7 +379,14 @@ export class TaskTableComponent implements OnInit, OnChanges {
       priority: 'medium',
       due_date: null,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      tags: [],
+      estimated_hours: null,
+      actual_hours: null,
+      group: null,
+      stage: null,
+      phone: null,
+      country_code: null
     } as Task);
   }
 
