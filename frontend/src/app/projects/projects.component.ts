@@ -2,13 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProjectListComponent } from './project-list/project-list.component';
+import { ProjectGridComponent } from './project-grid/project-grid.component';
+import { ProjectFormComponent } from './project-form/project-form.component';
 import { Project } from '../models/project';
 import { ProjectService } from '../services/project.service';
 
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProjectListComponent],
+  imports: [CommonModule, FormsModule, ProjectListComponent, ProjectGridComponent, ProjectFormComponent],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.scss'
 })
@@ -19,7 +21,7 @@ export class ProjectsComponent implements OnInit {
   showProjectForm: boolean = false;
   showAddProjectModal: boolean = false;
   selectedProject: Project | null = null;
-  viewMode: 'list' | 'pipeline' | 'grid' = 'list';
+  viewMode: 'list' | 'pipeline' | 'grid' = 'grid';
   activeFilter: string | null = null;
 
   // Filter and search properties
@@ -146,10 +148,12 @@ export class ProjectsComponent implements OnInit {
   }
 
   openAddProjectModal(): void {
-    this.showAddProjectModal = true;
+    this.selectedProject = null;
+    this.showProjectForm = true;
   }
 
   closeAddProjectModal(): void {
-    this.showAddProjectModal = false;
+    this.showProjectForm = false;
+    this.selectedProject = null;
   }
 }

@@ -6,7 +6,7 @@ import { User } from '../../models/user';
 import { Project } from '../../models/project';
 import { TaskService } from '../../services/task.service';
 import { ProjectService } from '../../services/project.service';
-import { ColumnConfig } from '../../models/column-config';
+import { TaskColumnConfig } from '../../models/task-column-config';
 
 @Component({
   selector: 'app-task-form',
@@ -38,7 +38,7 @@ export class TaskFormComponent implements OnInit {
   projects: Project[] = [];
   isLoadingProjects = false;
   customFieldKeys: string[] = [];
-  customColumns: ColumnConfig[] = [];
+  customColumns: TaskColumnConfig[] = [];
   newCustomFieldKey: string = '';
   newCustomFieldValue: string = '';
 
@@ -92,9 +92,22 @@ export class TaskFormComponent implements OnInit {
     if (savedColumns) {
       try {
         const columns = JSON.parse(savedColumns);
-        this.customColumns = columns.filter((col: ColumnConfig) =>
-          col.id.startsWith('custom_') && col.visible
+        this.customColumns = columns.filter((col: TaskColumnConfig) =>
+          col.id.startsWith('custom_')
         );
+
+        // Initialize custom fields for new columns if they don't exist
+        if (this.customColumns.length > 0 && !this.formData.custom_fields) {
+          this.formData.custom_fields = {};
+        }
+
+        // Ensure all custom columns have values in the form data
+        this.customColumns.forEach(column => {
+          const customKey = column.id.replace('custom_', '');
+          if (this.formData.custom_fields && !(customKey in this.formData.custom_fields)) {
+            this.formData.custom_fields[customKey] = '';
+          }
+        });
       } catch (e) {
         console.error('Error parsing saved column settings', e);
       }

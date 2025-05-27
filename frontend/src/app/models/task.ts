@@ -4,7 +4,7 @@ export interface Task {
     project_id?: number | null;
     title: string;
     description: string | null;
-    status: 'pending' | 'in_progress' | 'completed';
+    status: 'pending' | 'in_progress' | 'completed' | 'not_started' | 'in_review' | 'done';
     group?: string | null;
     stage?: string | null;
     priority: 'low' | 'medium' | 'high';
@@ -14,6 +14,8 @@ export interface Task {
     assignee_id?: number | null;
     phone?: string | null;
     country_code?: string | null;
+    progress?: number | null; // Progress percentage (0-100)
+    budget?: number | null; // Budget amount
     custom_fields?: Record<string, any> | null;
     assignee?: {
         id: number;

@@ -7,16 +7,28 @@ import { Project } from '../../models/project';
 import { ProjectService } from '../../services/project.service';
 import { PROJECT_DEFAULT_COLUMNS } from '../../models/project-column-config';
 import { ColumnConfig } from '../../models/column-config';
+import { LoadingSkeletonComponent } from '../../shared/components/loading-skeleton/loading-skeleton.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DragDropModule,
+    LoadingSkeletonComponent,
+    EmptyStateComponent,
+    StatusBadgeComponent
+  ],
   templateUrl: './project-list.component.html',
   styleUrl: './project-list.component.scss'
 })
 export class ProjectListComponent implements OnInit, OnChanges {
   @Input() projects: Project[] = [];
+  @Input() isLoading: boolean = false;
+  @Input() searchTerm: string = '';
   @Output() editProject = new EventEmitter<Project>();
   @Output() deleteProject = new EventEmitter<number>();
   @Output() projectStatusChanged = new EventEmitter<Project>();
@@ -40,6 +52,10 @@ export class ProjectListComponent implements OnInit, OnChanges {
   allSelected: boolean = false;
   sortKey: string = '';
 
+  // UI state properties
+  hoveredRowId: number | null = null;
+  actionLoading: { [key: string]: boolean } = {};
+
   private readonly STORAGE_KEY = 'project_table_columns';
 
   constructor(
@@ -50,11 +66,13 @@ export class ProjectListComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.loadColumnSettings();
     this.displayedColumnsConfig = [...this.columns];
+    this.sortedProjects = [...this.projects];
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['projects']) {
       this.sortProjectsData();
+      this.updateSelectAllState();
     }
   }
 
@@ -81,18 +99,27 @@ export class ProjectListComponent implements OnInit, OnChanges {
   }
 
   sortProjectsData(): void {
+    if (!this.projects || this.projects.length === 0) {
+      this.sortedProjects = [];
+      return;
+    }
+
     this.sortedProjects = [...this.projects].sort((a, b) => {
       let aValue: any = a[this.sortField as keyof Project];
       let bValue: any = b[this.sortField as keyof Project];
 
-      // Handle null values
-      if (aValue === null) return this.sortDirection === 'asc' ? -1 : 1;
-      if (bValue === null) return this.sortDirection === 'asc' ? 1 : -1;
+      // Handle null/undefined values
+      if (aValue === null || aValue === undefined) return this.sortDirection === 'asc' ? 1 : -1;
+      if (bValue === null || bValue === undefined) return this.sortDirection === 'asc' ? -1 : 1;
 
       // Handle dates
-      if (this.sortField === 'start_date' || this.sortField === 'end_date' || this.sortField === 'created_at') {
+      if (this.sortField === 'start_date' || this.sortField === 'end_date' || this.sortField === 'created_at' || this.sortField === 'updated_at') {
         aValue = new Date(aValue).getTime();
         bValue = new Date(bValue).getTime();
+
+        // Handle invalid dates
+        if (isNaN(aValue)) return this.sortDirection === 'asc' ? 1 : -1;
+        if (isNaN(bValue)) return this.sortDirection === 'asc' ? -1 : 1;
       }
 
       // Handle strings
@@ -103,7 +130,16 @@ export class ProjectListComponent implements OnInit, OnChanges {
       }
 
       // Handle numbers
-      return this.sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return this.sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+
+      // Fallback for mixed types - convert to string
+      const aStr = String(aValue);
+      const bStr = String(bValue);
+      return this.sortDirection === 'asc'
+        ? aStr.localeCompare(bStr)
+        : bStr.localeCompare(aStr);
     });
   }
 
@@ -403,8 +439,133 @@ export class ProjectListComponent implements OnInit, OnChanges {
     }
   }
 
+  // Enhanced UI interaction methods
+  onRowHover(projectId: number | null): void {
+    this.hoveredRowId = projectId;
+  }
+
+  setActionLoading(action: string, projectId: number, loading: boolean): void {
+    const key = `${action}_${projectId}`;
+    if (loading) {
+      this.actionLoading[key] = true;
+    } else {
+      delete this.actionLoading[key];
+    }
+  }
+
+  isActionLoading(action: string, projectId: number): boolean {
+    const key = `${action}_${projectId}`;
+    return !!this.actionLoading[key];
+  }
+
+  onStatusChanged(project: Project, newStatus: string): void {
+    this.setActionLoading('status', project.id, true);
+    const updatedProject = { ...project, status: newStatus as Project['status'] };
+    this.projectStatusChanged.emit(updatedProject);
+
+    // Simulate API call delay for better UX
+    setTimeout(() => {
+      this.setActionLoading('status', project.id, false);
+    }, 500);
+  }
+
+  onEditProjectWithLoading(project: Project): void {
+    this.setActionLoading('edit', project.id, true);
+    this.editProject.emit(project);
+
+    // Reset loading state after a short delay
+    setTimeout(() => {
+      this.setActionLoading('edit', project.id, false);
+    }, 300);
+  }
+
+  onDeleteProjectWithLoading(projectId: number): void {
+    if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      this.setActionLoading('delete', projectId, true);
+      this.deleteProject.emit(projectId);
+    }
+  }
+
+  getProjectProgress(project: Project): number {
+    // Calculate project progress based on tasks or other metrics
+    // This is a placeholder - you can implement actual logic based on your needs
+    if (project.status === 'completed') return 100;
+    if (project.status === 'cancelled') return 0;
+    if (project.status === 'active') return Math.floor(Math.random() * 80) + 10; // 10-90%
+    if (project.status === 'on_hold') return Math.floor(Math.random() * 50) + 10; // 10-60%
+    return 0;
+  }
+
+  getProjectPriority(project: Project): 'low' | 'medium' | 'high' {
+    // Determine priority based on project data
+    // This is a placeholder - implement actual logic based on your needs
+    const priorities: ('low' | 'medium' | 'high')[] = ['low', 'medium', 'high'];
+    return priorities[Math.floor(Math.random() * priorities.length)];
+  }
+
+  highlightSearchTerm(text: string): string {
+    if (!this.searchTerm || !text) return text;
+
+    const regex = new RegExp(`(${this.searchTerm})`, 'gi');
+    return text.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
+  }
+
+  getRelativeTime(dateString: string): string {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInDays === 0) return 'Today';
+    if (diffInDays === 1) return 'Yesterday';
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
+    return `${Math.floor(diffInDays / 365)} years ago`;
+  }
+
+  trackByProjectId(index: number, project: Project): number {
+    return project.id;
+  }
+
+  clearSelection(): void {
+    this.projects.forEach(project => project.selected = false);
+    this.selectedProjects = [];
+    this.allSelected = false;
+  }
+
+  openAddProjectModal(): void {
+    // This method should be implemented in the parent component
+    // For now, we'll emit an event or navigate
+    console.log('Open add project modal');
+  }
+
+  getColumnClass(col: ColumnConfig): string {
+    const classes = ['table-cell'];
+
+    if (col.id === 'name') classes.push('col-name');
+    if (col.id === 'status') classes.push('col-status');
+    if (col.id === 'budget') classes.push('col-budget');
+    if (col.id === 'actions') classes.push('col-actions');
+
+    return classes.join(' ');
+  }
+
   getProjectValue(project: Project, col: ColumnConfig): any {
     const key = col.key || col.id;
-    return (project as any)[key];
+
+    // Handle custom fields
+    if (key.startsWith('custom_')) {
+      const customFieldKey = key.replace('custom_', '');
+      return project.custom_fields?.[customFieldKey] || null;
+    }
+
+    // Handle standard fields
+    const value = (project as any)[key];
+
+    // Return null for undefined values to ensure consistent display
+    return value !== undefined ? value : null;
   }
 }

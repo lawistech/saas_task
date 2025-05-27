@@ -28,6 +28,8 @@ class Task extends Model
         'assignee_id',
         'phone',
         'country_code',
+        'progress',
+        'budget',
         'custom_fields',
     ];
 

@@ -1,105 +1,222 @@
-<div class="tasks-container">
-  <div class="tasks-header">
-    <div class="header-left">
-      <h1>Task Management</h1>
-      <div class="view-toggle">
+<!-- Clean, modern header following sidebar design pattern -->
+<div class="p-6 bg-slate-50">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center space-x-6">
+        <h1 class="text-2xl font-semibold text-slate-800 tracking-tight">Task Management</h1>
+
+        <!-- View Toggle with modern design -->
+        <div class="flex items-center bg-white rounded-xl shadow-sm border border-slate-200 p-1">
+          <button
+            class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200"
+            [class]="viewMode === 'list' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'"
+            (click)="viewMode = 'list'; loadAllTasks(activeFilter || undefined)">
+            <i class="fas fa-list mr-2"></i>
+            List
+          </button>
+          <button
+            class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200"
+            [class]="viewMode === 'table' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'"
+            (click)="viewMode = 'table'; loadAllTasks(activeFilter || undefined)">
+            <i class="fas fa-table mr-2"></i>
+            Table
+          </button>
+          <button
+            class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200"
+            [class]="viewMode === 'pipeline' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'"
+            (click)="viewMode = 'pipeline'; loadAllTasks(activeFilter || undefined)">
+            <i class="fas fa-columns mr-2"></i>
+            Pipeline
+          </button>
+        </div>
+      </div>
+
+      <!-- Add Task Button -->
+      <button
+        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white text-sm font-medium rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        (click)="openTaskForm()">
+        <i class="fas fa-plus mr-2"></i>
+        Add Task
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+      <div class="flex items-center space-x-3 text-slate-600">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+        <span class="text-sm font-medium">Loading tasks...</span>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <!-- List View -->
+      <div *ngIf="!isLoading && viewMode === 'list'">
+        <!-- Unified Search and Filter Controls -->
+        <div class="px-4 py-3 bg-slate-50 border-b border-slate-200">
+          <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+            <!-- Search Input -->
+            <div class="flex-1 relative min-w-0">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search across all tasks and projects..."
+                [(ngModel)]="searchTerm"
+                (ngModelChange)="onSearchChange()"
+                class="block w-full pl-10 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400 bg-white transition-colors">
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <select
+                [(ngModel)]="statusFilter"
+                (ngModelChange)="onFilterChange()"
+                class="text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors min-w-0">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+
+              <select
+                [(ngModel)]="priorityFilter"
+                (ngModelChange)="onFilterChange()"
+                class="text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors min-w-0">
+                <option value="">All Priority</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unified Task List -->
+        <app-task-list
+          [multiProjectMode]="true"
+          [projectTasks]="filteredProjectTasks"
+          [projects]="projects"
+          [unassignedTasks]="filteredUnassignedTasks"
+          [hideSearchControls]="true"
+          (editTask)="openTaskForm($event)"
+          (deleteTask)="onTaskDeleted($event)"
+          (taskStatusChanged)="onTaskStatusChanged($event)"
+          (viewTaskDetails)="openTaskDetailModal($event)">
+        </app-task-list>
+      </div>
+
+      <!-- Table View -->
+      <div *ngIf="!isLoading && viewMode === 'table'">
+        <!-- Clean Search and Filter Controls -->
+        <div class="px-4 py-3 bg-slate-50 border-b border-slate-200">
+          <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+            <!-- Search Input -->
+            <div class="flex-1 relative min-w-0">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search tasks..."
+                [(ngModel)]="searchTerm"
+                (ngModelChange)="onSearchChange()"
+                class="block w-full pl-10 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-400 bg-white transition-colors">
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <select
+                [(ngModel)]="statusFilter"
+                (ngModelChange)="onFilterChange()"
+                class="text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors min-w-0">
+                <option value="">All Status</option>
+                <option value="not_started">Not Started</option>
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="in_review">In Review</option>
+                <option value="completed">Completed</option>
+                <option value="done">Done</option>
+              </select>
+
+              <select
+                [(ngModel)]="priorityFilter"
+                (ngModelChange)="onFilterChange()"
+                class="text-sm border border-slate-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors min-w-0">
+                <option value="">All Priority</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+
+              <!-- Clear Filters Button -->
+              <button *ngIf="statusFilter || priorityFilter || searchTerm"
+                      (click)="clearFilters()"
+                      class="text-sm text-slate-500 hover:text-slate-700 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors font-medium">
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <app-task-table
+          [tasks]="filteredTasks"
+          [projects]="projects"
+          (editTask)="openTaskForm($event)"
+          (deleteTask)="onTaskDeleted($event)"
+          (taskStatusChanged)="onTaskStatusChanged($event)"
+          (viewTaskDetails)="openTaskDetailModal($event)">
+        </app-task-table>
+      </div>
+
+      <!-- Pipeline View -->
+      <div *ngIf="!isLoading && viewMode === 'pipeline'" class="p-6">
+        <app-task-pipeline
+          [tasks]="filteredTasks"
+          (editTask)="openTaskForm($event)"
+          (deleteTask)="onTaskDeleted($event)"
+          (taskStatusChanged)="onTaskStatusChanged($event)"
+          (viewTaskDetails)="openTaskDetailModal($event)">
+        </app-task-pipeline>
+      </div>
+
+      <!-- Empty States -->
+      <div *ngIf="!isLoading && tasks.length === 0 && (viewMode === 'pipeline' || viewMode === 'table')"
+           class="flex flex-col items-center justify-center py-16 px-6 text-center">
+        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+          <i class="fas fa-tasks text-2xl text-slate-400"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-800 mb-2">No tasks found</h3>
+        <p class="text-slate-600 mb-6">Create a new task to get started!</p>
         <button
-          class="view-btn"
-          [class.active]="viewMode === 'list'"
-          (click)="viewMode = 'list'; loadAllTasks(activeFilter || undefined)">
-          <i class="icon">📋</i> List View
+          class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+          (click)="openTaskForm()">
+          <i class="fas fa-plus mr-2"></i>
+          Create Task
         </button>
+      </div>
+
+      <div *ngIf="!isLoading && viewMode === 'list' && projects.length === 0 && unassignedTasks.length === 0"
+           class="flex flex-col items-center justify-center py-16 px-6 text-center">
+        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+          <i class="fas fa-folder text-2xl text-slate-400"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-800 mb-2">No projects found</h3>
+        <p class="text-slate-600 mb-6">Create a project first to organize your tasks better!</p>
         <button
-          class="view-btn"
-          [class.active]="viewMode === 'pipeline'"
-          (click)="viewMode = 'pipeline'; loadAllTasks(activeFilter || undefined)">
-          <i class="icon">📊</i> Pipeline View
+          class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+          (click)="openTaskForm()">
+          <i class="fas fa-plus mr-2"></i>
+          Create Project
         </button>
       </div>
     </div>
-    <button class="add-task-btn" (click)="openTaskForm()">
-      <i class="icon">➕</i> Add New Task
-    </button>
-  </div>
-
-  <div class="task-filters" *ngIf="viewMode === 'list'">
-    <button
-      class="filter-btn"
-      [class.active]="activeFilter === null"
-      (click)="loadProjectsAndTasks()">
-      All
-    </button>
-    <button
-      class="filter-btn"
-      [class.active]="activeFilter === 'pending'"
-      (click)="loadProjectsAndTasks('pending')">
-      Pending
-    </button>
-    <button
-      class="filter-btn"
-      [class.active]="activeFilter === 'in_progress'"
-      (click)="loadProjectsAndTasks('in_progress')">
-      In Progress
-    </button>
-    <button
-      class="filter-btn"
-      [class.active]="activeFilter === 'completed'"
-      (click)="loadProjectsAndTasks('completed')">
-      Completed
-    </button>
-  </div>
-
-  <div *ngIf="isLoading" class="loading-indicator">
-    Loading tasks...
-  </div>
-
-  <!-- List View -->
-  <div *ngIf="!isLoading && viewMode === 'list'" class="project-tasks-container">
-    <!-- Multi-project task list -->
-    <app-task-list
-      [multiProjectMode]="true"
-      [projectTasks]="projectTasks"
-      [projects]="projects"
-      (editTask)="openTaskForm($event)"
-      (deleteTask)="onTaskDeleted($event)"
-      (taskStatusChanged)="onTaskStatusChanged($event)">
-    </app-task-list>
-
-    <!-- Unassigned Tasks -->
-    <div *ngIf="unassignedTasks.length > 0" class="project-task-section">
-      <div class="project-header">
-        <h2>Unassigned Tasks</h2>
-        <button class="add-project-task-btn" (click)="openTaskForm()">
-          <i class="icon">➕</i> Add Task
-        </button>
-      </div>
-
-      <app-task-list
-        [tasks]="unassignedTasks"
-        [projectContext]="false"
-        (editTask)="openTaskForm($event)"
-        (deleteTask)="onTaskDeleted($event)"
-        (taskStatusChanged)="onTaskStatusChanged($event)">
-      </app-task-list>
-    </div>
-  </div>
-
-  <!-- Pipeline View -->
-  <app-task-pipeline
-    *ngIf="!isLoading && viewMode === 'pipeline'"
-    [tasks]="tasks"
-    (editTask)="openTaskForm($event)"
-    (deleteTask)="onTaskDeleted($event)"
-    (taskStatusChanged)="onTaskStatusChanged($event)">
-  </app-task-pipeline>
-
-  <div *ngIf="!isLoading && tasks.length === 0" class="no-tasks">
-    <p>No tasks found. Create a new task to get started!</p>
-  </div>
-
-  <div *ngIf="!isLoading && viewMode === 'list' && projects.length === 0 && unassignedTasks.length === 0" class="no-projects">
-    <p>No projects found. Create a project first to organize your tasks better!</p>
-  </div>
 
   <app-task-form
     *ngIf="showTaskForm"
@@ -108,4 +225,13 @@
     (close)="closeTaskForm()"
     (saved)="onTaskSaved()">
   </app-task-form>
+
+  <!-- Task Detail Modal -->
+  <app-task-detail-modal
+    [task]="selectedTaskForDetail"
+    [showModal]="showTaskDetailModal"
+    (closeModal)="closeTaskDetailModal()"
+    (editTask)="onTaskDetailEdit($event)"
+    (deleteTask)="onTaskDetailDelete($event)">
+  </app-task-detail-modal>
 </div>

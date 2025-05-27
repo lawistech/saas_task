@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TaskListComponent } from './task-list/task-list.component';
 import { TaskFormComponent } from './task-form/task-form.component';
 import { TaskPipelineComponent } from './task-pipeline/task-pipeline.component';
+import { TaskTableComponent } from './task-table/task-table.component';
+import { TaskDetailModalComponent } from './task-detail-modal/task-detail-modal.component';
 import { Task } from '../models/task';
 import { Project } from '../models/project';
 import { TaskService } from '../services/task.service';
@@ -11,7 +14,7 @@ import { ProjectService } from '../services/project.service';
 @Component({
   selector: 'app-tasks',
   standalone: true,
-  imports: [CommonModule, TaskListComponent, TaskFormComponent, TaskPipelineComponent],
+  imports: [CommonModule, FormsModule, TaskListComponent, TaskFormComponent, TaskPipelineComponent, TaskTableComponent, TaskDetailModalComponent],
   templateUrl: './tasks.component.html',
   styleUrl: './tasks.component.scss'
 })
@@ -20,12 +23,23 @@ export class TasksComponent implements OnInit {
   projects: Project[] = [];
   projectTasks: Map<number, Task[]> = new Map();
   unassignedTasks: Task[] = [];
+  filteredTasks: Task[] = [];
+  filteredProjectTasks: Map<number, Task[]> = new Map();
+  filteredUnassignedTasks: Task[] = [];
   isLoading = false;
   isLoadingProjects = false;
   showTaskForm = false;
+  showTaskDetailModal = false;
   selectedTask: Task | null = null;
+  selectedTaskForDetail: Task | null = null;
   activeFilter: string | null = null;
-  viewMode: 'list' | 'pipeline' = 'list';
+
+  // Unified search and filter properties
+  searchTerm: string = '';
+  statusFilter: string = '';
+  priorityFilter: string = '';
+
+  viewMode: 'list' | 'table' | 'pipeline' = 'pipeline';
 
   constructor(
     private taskService: TaskService,
@@ -74,6 +88,7 @@ export class TasksComponent implements OnInit {
         }
       });
     } else {
+      // For list and table views, load regular tasks
       this.taskService.getTasks(status).subscribe({
         next: (tasks) => {
           this.tasks = tasks as Task[];
@@ -104,10 +119,81 @@ export class TasksComponent implements OnInit {
         this.unassignedTasks.push(task);
       }
     });
+
+    // Apply filters after organizing
+    this.applyFilters();
+  }
+
+  applyFilters(): void {
+    // Filter tasks based on search term and status filter
+    this.filteredTasks = this.filterTasks(this.tasks);
+
+    // Filter project tasks
+    this.filteredProjectTasks.clear();
+    this.projectTasks.forEach((tasks, projectId) => {
+      const filtered = this.filterTasks(tasks);
+      if (filtered.length > 0) {
+        this.filteredProjectTasks.set(projectId, filtered);
+      }
+    });
+
+    // Filter unassigned tasks
+    this.filteredUnassignedTasks = this.filterTasks(this.unassignedTasks);
+  }
+
+  // Unified search and filter methods
+  onSearchChange(): void {
+    this.applyFilters();
+  }
+
+  onFilterChange(): void {
+    this.applyFilters();
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.statusFilter = '';
+    this.priorityFilter = '';
+    this.applyFilters();
+  }
+
+  private filterTasks(tasks: Task[]): Task[] {
+    return tasks.filter(task => {
+      // Search filter
+      const searchMatch = !this.searchTerm ||
+        task.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        (task.description && task.description.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
+        (task.assignee?.name && task.assignee.name.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
+        (task.project?.name && task.project.name.toLowerCase().includes(this.searchTerm.toLowerCase()));
+
+      // Status filter (unified)
+      const statusMatch = !this.statusFilter || task.status === this.statusFilter;
+
+      // Priority filter
+      const priorityMatch = !this.priorityFilter || task.priority === this.priorityFilter;
+
+      // Legacy active filter (for backward compatibility)
+      const activeFilterMatch = !this.activeFilter || task.status === this.activeFilter;
+
+      return searchMatch && statusMatch && priorityMatch && activeFilterMatch;
+    });
+  }
+
+  // Legacy method for backward compatibility with status filter
+  onStatusFilterChange(status: string | null): void {
+    this.activeFilter = status;
+    this.loadProjectsAndTasks(status || undefined);
   }
 
   toggleViewMode(): void {
-    this.viewMode = this.viewMode === 'list' ? 'pipeline' : 'list';
+    // Cycle through view modes: list -> table -> pipeline -> list
+    if (this.viewMode === 'list') {
+      this.viewMode = 'table';
+    } else if (this.viewMode === 'table') {
+      this.viewMode = 'pipeline';
+    } else {
+      this.viewMode = 'list';
+    }
     this.loadProjectsAndTasks(this.activeFilter || undefined);
   }
 
@@ -165,5 +251,26 @@ export class TasksComponent implements OnInit {
 
   getProjectById(projectId: number): Project | undefined {
     return this.projects.find(project => project.id === projectId);
+  }
+
+  // Task Detail Modal Methods
+  openTaskDetailModal(task: Task): void {
+    this.selectedTaskForDetail = task;
+    this.showTaskDetailModal = true;
+  }
+
+  closeTaskDetailModal(): void {
+    this.showTaskDetailModal = false;
+    this.selectedTaskForDetail = null;
+  }
+
+  onTaskDetailEdit(task: Task): void {
+    this.closeTaskDetailModal();
+    this.openTaskForm(task);
+  }
+
+  onTaskDetailDelete(taskId: number): void {
+    this.closeTaskDetailModal();
+    this.onTaskDeleted(taskId);
   }
 }

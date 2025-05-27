@@ -68,7 +68,7 @@ class TaskController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'status' => 'required|in:pending,in_progress,completed',
+            'status' => 'required|in:pending,in_progress,completed,not_started,in_review,done',
             'group' => 'nullable|string|max:255',
             'stage' => 'nullable|string|max:255',
             'priority' => 'required|in:low,medium,high',
@@ -77,6 +77,8 @@ class TaskController extends Controller
             'assignee_id' => 'nullable|exists:users,id',
             'phone' => 'nullable|string|max:255',
             'country_code' => 'nullable|string|max:10',
+            'progress' => 'nullable|integer|min:0|max:100',
+            'budget' => 'nullable|numeric|min:0',
             'custom_fields' => 'nullable|array',
         ]);
 
@@ -128,7 +130,7 @@ class TaskController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
-            'status' => 'sometimes|required|in:pending,in_progress,completed',
+            'status' => 'sometimes|required|in:pending,in_progress,completed,not_started,in_review,done',
             'group' => 'nullable|string|max:255',
             'stage' => 'nullable|string|max:255',
             'priority' => 'sometimes|required|in:low,medium,high',
@@ -137,6 +139,8 @@ class TaskController extends Controller
             'assignee_id' => 'nullable|exists:users,id',
             'phone' => 'nullable|string|max:255',
             'country_code' => 'nullable|string|max:10',
+            'progress' => 'nullable|integer|min:0|max:100',
+            'budget' => 'nullable|numeric|min:0',
             'custom_fields' => 'nullable|array',
         ]);
 

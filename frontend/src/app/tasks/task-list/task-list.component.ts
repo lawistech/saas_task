@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Task } from '../../models/task';
 import { Project } from '../../models/project';
 import { TaskService } from '../../services/task.service';
-import { ColumnConfig, DEFAULT_COLUMNS } from '../../models/column-config';
+import { ColumnConfig } from '../../models/column-config';
+import { TaskColumnConfig, TASK_DEFAULT_COLUMNS } from '../../models/task-column-config';
 import { Router } from '@angular/router';
 
 @Component({
@@ -21,22 +22,33 @@ export class TaskListComponent implements OnInit, OnChanges {
   @Input() multiProjectMode: boolean = false; // Flag to indicate if we should display multiple project tables
   @Input() projectTasks: Map<number, Task[]> = new Map(); // Map of project ID to tasks for multi-project mode
   @Input() projects: Project[] = []; // List of projects for multi-project mode
+  @Input() unassignedTasks: Task[] = []; // Unassigned tasks for unified interface
+  @Input() hideSearchControls: boolean = false; // Hide search controls when parent handles filtering
   @Output() editTask = new EventEmitter<Task>();
   @Output() deleteTask = new EventEmitter<number>();
   @Output() taskStatusChanged = new EventEmitter<Task>();
+  @Output() viewTaskDetails = new EventEmitter<Task>();
 
   sortedTasks: Task[] = [];
+  filteredTasks: Task[] = [];
   selectedTasks: number[] = [];
   selectedTask: Task | null = null;
+
+  // Search and filter properties
+  searchTerm: string = '';
+  statusFilter: string = '';
+  priorityFilter: string = '';
 
   sortField: string = 'due_date';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  columns: ColumnConfig[] = [];
+  columns: TaskColumnConfig[] = [];
   showColumnSettings: boolean = false;
-  draggedColumn: ColumnConfig | null = null;
+  draggedColumn: TaskColumnConfig | null = null;
   showAddColumnForm: boolean = false;
   newColumnName: string = '';
+  newColumnDataType: 'text' | 'number' | 'date' | 'select' | 'boolean' = 'text';
+  newColumnSelectOptions: string = '';
 
   private readonly STORAGE_KEY = 'task_table_columns';
 
@@ -47,16 +59,12 @@ export class TaskListComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.loadColumnSettings();
-
-    // Initialize sorted project tasks if in multi-project mode
-    if (this.multiProjectMode) {
-      this.updateSortedProjectTasks();
-    }
+    this.applyFiltersAndSort();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['tasks']) {
-      this.sortTasks(this.sortField);
+      this.applyFiltersAndSort();
     }
 
     // If projectContext changes, update column visibility
@@ -97,7 +105,7 @@ export class TaskListComponent implements OnInit, OnChanges {
   }
 
   resetToDefaultColumns(): void {
-    this.columns = [...DEFAULT_COLUMNS];
+    this.columns = [...TASK_DEFAULT_COLUMNS];
 
     // If in project context, hide the project column
     if (this.projectContext) {
@@ -114,7 +122,7 @@ export class TaskListComponent implements OnInit, OnChanges {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.columns));
   }
 
-  toggleColumnVisibility(column: ColumnConfig): void {
+  toggleColumnVisibility(column: TaskColumnConfig): void {
     column.visible = !column.visible;
     this.saveColumnSettings();
   }
@@ -128,19 +136,25 @@ export class TaskListComponent implements OnInit, OnChanges {
     return column ? column.visible : false;
   }
 
-  getVisibleColumns(): ColumnConfig[] {
+  getVisibleColumns(): TaskColumnConfig[] {
     return this.columns
       .filter(column => column.visible)
       .sort((a, b) => a.order - b.order);
   }
 
-  getCustomColumns(): ColumnConfig[] {
+  getCustomColumns(): TaskColumnConfig[] {
     return this.columns
       .filter(column => column.id.startsWith('custom_'))
       .sort((a, b) => a.order - b.order);
   }
 
-  onDragStart(event: DragEvent, column: ColumnConfig): void {
+  getCoreColumns(): TaskColumnConfig[] {
+    return this.columns
+      .filter(column => !column.id.startsWith('custom_'))
+      .sort((a, b) => a.order - b.order);
+  }
+
+  onDragStart(event: DragEvent, column: TaskColumnConfig): void {
     this.draggedColumn = column;
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
@@ -148,14 +162,14 @@ export class TaskListComponent implements OnInit, OnChanges {
     }
   }
 
-  onDragOver(event: DragEvent, column: ColumnConfig): void {
+  onDragOver(event: DragEvent, column: TaskColumnConfig): void {
     event.preventDefault();
     if (this.draggedColumn && this.draggedColumn.id !== column.id) {
       event.dataTransfer!.dropEffect = 'move';
     }
   }
 
-  onDrop(event: DragEvent, targetColumn: ColumnConfig): void {
+  onDrop(event: DragEvent, targetColumn: TaskColumnConfig): void {
     event.preventDefault();
     if (this.draggedColumn && this.draggedColumn.id !== targetColumn.id) {
       // Reorder columns
@@ -191,6 +205,43 @@ export class TaskListComponent implements OnInit, OnChanges {
     this.draggedColumn = null;
   }
 
+  // Search and filter methods
+  onSearchChange(): void {
+    this.applyFiltersAndSort();
+  }
+
+  onFilterChange(): void {
+    this.applyFiltersAndSort();
+  }
+
+  applyFiltersAndSort(): void {
+    // First apply filters to regular tasks
+    this.filteredTasks = this.tasks.filter(task => {
+      // Search filter
+      const searchMatch = !this.searchTerm ||
+        task.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        (task.description && task.description.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
+        (task.assignee?.name && task.assignee.name.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
+        (task.project?.name && task.project.name.toLowerCase().includes(this.searchTerm.toLowerCase()));
+
+      // Status filter
+      const statusMatch = !this.statusFilter || task.status === this.statusFilter;
+
+      // Priority filter
+      const priorityMatch = !this.priorityFilter || task.priority === this.priorityFilter;
+
+      return searchMatch && statusMatch && priorityMatch;
+    });
+
+    // Then sort the filtered results
+    this.sortTasks(this.sortField);
+
+    // Also apply filters to multi-project mode if applicable
+    if (this.multiProjectMode) {
+      this.updateSortedProjectTasks();
+    }
+  }
+
   sortTasks(field: string): void {
     // If clicking the same field, toggle direction
     if (this.sortField === field) {
@@ -200,7 +251,7 @@ export class TaskListComponent implements OnInit, OnChanges {
       this.sortDirection = 'asc';
     }
 
-    this.sortedTasks = this.sortTasksArray([...this.tasks], field, this.sortDirection);
+    this.sortedTasks = this.sortTasksArray([...this.filteredTasks], field, this.sortDirection);
 
     // If in multi-project mode, also update sorted tasks for each project
     if (this.multiProjectMode) {
@@ -261,11 +312,8 @@ export class TaskListComponent implements OnInit, OnChanges {
   }
 
   toggleTaskDetails(task: Task): void {
-    if (this.selectedTask && this.selectedTask.id === task.id) {
-      this.selectedTask = null;
-    } else {
-      this.selectedTask = task;
-    }
+    // Emit event to parent component to handle unified modal
+    this.viewTaskDetails.emit(task);
   }
 
   closeTaskDetails(): void {
@@ -290,7 +338,7 @@ export class TaskListComponent implements OnInit, OnChanges {
         if (index !== -1) {
           this.tasks[index] = response.task;
           this.selectedTask = response.task;
-          this.sortTasks(this.sortField);
+          this.applyFiltersAndSort();
           this.taskStatusChanged.emit(response.task);
         }
       },
@@ -347,13 +395,36 @@ export class TaskListComponent implements OnInit, OnChanges {
     return projectSortedTasks.filter(task => task.status === status);
   }
 
+  // Get all tasks for a specific project (for minimal multi-project view)
+  getProjectTasks(projectId: number): Task[] {
+    return this.sortedProjectTasks.get(projectId) || [];
+  }
+
   // Update sorted tasks for each project
   updateSortedProjectTasks(): void {
     this.sortedProjectTasks.clear();
 
-    // For each project, sort its tasks
+    // For each project, filter and sort its tasks
     this.projectTasks.forEach((tasks, projectId) => {
-      const sortedTasks = this.sortTasksArray([...tasks], this.sortField, this.sortDirection);
+      // Apply filters to project tasks
+      const filteredProjectTasks = tasks.filter(task => {
+        // Search filter
+        const searchMatch = !this.searchTerm ||
+          task.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+          (task.description && task.description.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
+          (task.assignee?.name && task.assignee.name.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
+          (task.project?.name && task.project.name.toLowerCase().includes(this.searchTerm.toLowerCase()));
+
+        // Status filter
+        const statusMatch = !this.statusFilter || task.status === this.statusFilter;
+
+        // Priority filter
+        const priorityMatch = !this.priorityFilter || task.priority === this.priorityFilter;
+
+        return searchMatch && statusMatch && priorityMatch;
+      });
+
+      const sortedTasks = this.sortTasksArray([...filteredProjectTasks], this.sortField, this.sortDirection);
       this.sortedProjectTasks.set(projectId, sortedTasks);
     });
   }
@@ -429,6 +500,8 @@ export class TaskListComponent implements OnInit, OnChanges {
     this.showAddColumnForm = !this.showAddColumnForm;
     if (this.showAddColumnForm) {
       this.newColumnName = '';
+      this.newColumnDataType = 'text';
+      this.newColumnSelectOptions = '';
     }
   }
 
@@ -446,25 +519,31 @@ export class TaskListComponent implements OnInit, OnChanges {
       return;
     }
 
+    // Parse select options if data type is select
+    let selectOptions: string[] | undefined;
+    if (this.newColumnDataType === 'select' && this.newColumnSelectOptions.trim()) {
+      selectOptions = this.newColumnSelectOptions.split(',').map(option => option.trim()).filter(option => option);
+    }
+
+    // Find the actions column to insert before it
+    const actionsColumn = this.columns.find(col => col.id === 'actions');
+    const newOrder = actionsColumn ? actionsColumn.order : this.columns.length;
+
     // Create the new column
-    const newColumn: ColumnConfig = {
+    const newColumn: TaskColumnConfig = {
       id: columnId,
       name: this.newColumnName,
       visible: true,
-      order: this.columns.length, // Add it at the end (before actions column)
-      width: '150px'
+      order: newOrder,
+      width: '150px',
+      sortable: true,
+      dataType: this.newColumnDataType,
+      selectOptions: selectOptions
     };
 
-    // Find the actions column
-    const actionsColumn = this.columns.find(col => col.id === 'actions');
-
+    // Update order of actions column if it exists
     if (actionsColumn) {
-      // Insert the new column before the actions column
-      this.columns.forEach(col => {
-        if (col.id === 'actions') {
-          col.order = col.order + 1;
-        }
-      });
+      actionsColumn.order = newOrder + 1;
     }
 
     // Add the new column to the array
@@ -476,9 +555,11 @@ export class TaskListComponent implements OnInit, OnChanges {
     // Close the form
     this.showAddColumnForm = false;
     this.newColumnName = '';
+    this.newColumnDataType = 'text';
+    this.newColumnSelectOptions = '';
   }
 
-  deleteColumn(column: ColumnConfig): void {
+  deleteColumn(column: TaskColumnConfig): void {
     if (!column.id.startsWith('custom_')) {
       alert('Default columns cannot be deleted.');
       return;
@@ -496,6 +577,32 @@ export class TaskListComponent implements OnInit, OnChanges {
 
       // Save the updated columns
       this.saveColumnSettings();
+    }
+  }
+
+  // Helper method to get custom field value with proper formatting
+  getCustomFieldValue(task: Task, column: TaskColumnConfig): string {
+    if (!task.custom_fields || !column.id.startsWith('custom_')) {
+      return '-';
+    }
+
+    const fieldKey = column.id.replace('custom_', '');
+    const value = task.custom_fields[fieldKey];
+
+    if (value === null || value === undefined || value === '') {
+      return '-';
+    }
+
+    // Format based on data type
+    switch (column.dataType) {
+      case 'date':
+        return value ? new Date(value).toLocaleDateString() : '-';
+      case 'boolean':
+        return value ? 'Yes' : 'No';
+      case 'number':
+        return typeof value === 'number' ? value.toString() : value;
+      default:
+        return value.toString();
     }
   }
 }

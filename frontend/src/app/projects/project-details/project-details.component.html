@@ -102,22 +102,71 @@
         <h2 class="text-xl font-semibold text-gray-800 m-0">Tasks</h2>
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"> <!-- .tasks-action-controls -->
           <div class="flex gap-2"> <!-- .view-toggle-group -->
-            <button class="py-1.5 px-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-1">List</button>
-            <button class="py-1.5 px-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-1">Board</button>
+            <button
+              (click)="switchView('list')"
+              [ngClass]="{'bg-gray-200': viewMode === 'list'}"
+              class="py-1.5 px-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-1">
+              List
+            </button>
+            <button
+              (click)="switchView('pipeline')"
+              [ngClass]="{'bg-gray-200': viewMode === 'pipeline'}"
+              class="py-1.5 px-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-1">
+              Board
+            </button>
           </div>
-          <button class="py-2 px-4 bg-gray-800 text-white rounded-md hover:bg-gray-900 text-sm font-medium flex items-center gap-2">
+          <button (click)="openTaskForm()" class="py-2 px-4 bg-gray-800 text-white rounded-md hover:bg-gray-900 text-sm font-medium flex items-center gap-2">
             <i class="fas fa-plus"></i> Add Task
           </button>
         </div>
       </div>
-      <div class="text-center p-8 text-gray-500"> <!-- .no-tasks-message -->
-        <p>Task management functionality is not yet implemented for this view.</p>
+
+      <!-- Task Display Area -->
+      <div *ngIf="!isLoading">
+        <!-- List View -->
+        <app-task-list
+          *ngIf="viewMode === 'list'"
+          [tasks]="tasks"
+          [projectContext]="true"
+          [projectId]="projectId"
+          (editTask)="openTaskForm($event)"
+          (deleteTask)="onTaskDeleted($event)"
+          (taskStatusChanged)="onTaskStatusChanged($event)">
+        </app-task-list>
+
+        <!-- Pipeline View -->
+        <app-task-pipeline
+          *ngIf="viewMode === 'pipeline'"
+          [tasks]="tasks"
+          (editTask)="openTaskForm($event)"
+          (deleteTask)="onTaskDeleted($event)"
+          (taskStatusChanged)="onTaskStatusChanged($event)">
+        </app-task-pipeline>
+
+        <!-- No Tasks Message -->
+        <div *ngIf="tasks.length === 0" class="text-center p-8 text-gray-500">
+          <p>No tasks found for this project. Click "Add Task" to create your first task!</p>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center p-8 text-gray-500">
+        <p>Loading tasks...</p>
       </div>
     </div>
   </div>
 
   <!-- Project Form Modal -->
   <app-project-form [project]="projectToEdit" [showModal]="showEditModal" (closeModal)="handleCloseModal()"></app-project-form>
+
+  <!-- Task Form Modal -->
+  <app-task-form
+    *ngIf="showTaskForm"
+    [task]="selectedTask"
+    [projectId]="selectedTask?.project_id || projectId"
+    (close)="closeTaskForm()"
+    (saved)="onTaskSaved()">
+  </app-task-form>
 
   <!-- Confirmation Modal for Delete -->
   <div *ngIf="showDeleteConfirmation" class="fixed inset-0 w-full h-full bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 p-4">

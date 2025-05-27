@@ -1,0 +1,96 @@
+<!-- Loading State -->
+<app-loading-skeleton
+  *ngIf="isLoading"
+  type="grid"
+  [rows]="6">
+</app-loading-skeleton>
+
+<!-- Empty State -->
+<app-empty-state
+  *ngIf="!isLoading && projects.length === 0"
+  title="No projects found"
+  [description]="searchTerm ? 'No projects match your search criteria. Try adjusting your filters.' : 'Get started by creating your first project to organize your work.'"
+  icon="fas fa-folder-open"
+  variant="projects"
+  actionText="Create Project"
+  actionIcon="fas fa-plus"
+  (actionClick)="openAddProjectModal()">
+</app-empty-state>
+
+<!-- Grid Content -->
+<div *ngIf="!isLoading && projects.length > 0" class="modern-grid">
+  <div *ngFor="let project of projects; trackBy: trackByProjectId"
+       class="modern-project-card"
+       (click)="viewProjectDetails(project)"
+       [attr.aria-label]="'View details for project: ' + project.name"
+       role="button"
+       tabindex="0"
+       (keydown)="onCardKeydown($event, project)">
+
+    <!-- Card Header -->
+    <div class="card-header">
+      <div class="header-content">
+        <div class="project-info">
+          <h3 class="project-name">{{ project.name }}</h3>
+          <app-status-badge
+            [status]="project.status"
+            [editable]="true"
+            size="small"
+            (statusChange)="onStatusChange(project, $event)">
+          </app-status-badge>
+        </div>
+        <div class="card-actions">
+          <button (click)="onEditProject(project); $event.stopPropagation()"
+                  class="action-btn edit-btn"
+                  title="Edit Project"
+                  [attr.aria-label]="'Edit project ' + project.name">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button (click)="onDeleteProject(project.id); $event.stopPropagation()"
+                  class="action-btn delete-btn"
+                  title="Delete Project"
+                  [attr.aria-label]="'Delete project ' + project.name">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Body -->
+    <div class="card-body">
+      <!-- Progress Indicator -->
+      <div class="progress-section" *ngIf="getProjectProgress(project) !== null">
+        <div class="progress-info">
+          <span class="progress-label">Progress</span>
+          <span class="progress-value">{{ getProjectProgress(project) }}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="getProjectProgress(project)"></div>
+        </div>
+      </div>
+
+      <!-- Essential Details -->
+      <div class="essential-details">
+        <div class="detail-row" *ngIf="project.end_date">
+          <span class="detail-label">Due Date</span>
+          <span class="detail-value">{{ formatDate(project.end_date) }}</span>
+        </div>
+        <div class="detail-row" *ngIf="project.client_name">
+          <span class="detail-label">Client</span>
+          <span class="detail-value">{{ project.client_name }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Footer -->
+    <div class="card-footer">
+      <span class="created-date">{{ formatDate(project.created_at) }}</span>
+      <button (click)="viewProjectDetails(project); $event.stopPropagation()"
+              class="view-btn"
+              [attr.aria-label]="'View details for project ' + project.name">
+        <span>View</span>
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+</div>

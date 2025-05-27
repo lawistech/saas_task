@@ -108,12 +108,55 @@
         <div class="form-row" *ngFor="let column of customColumns">
           <div class="form-group">
             <label [for]="'custom_' + column.id">{{ column.name }}</label>
+
+            <!-- Text input -->
             <input
+              *ngIf="!column.dataType || column.dataType === 'text'"
               type="text"
               [id]="'custom_' + column.id"
               [name]="'custom_' + column.id"
               [(ngModel)]="formData.custom_fields![column.id.replace('custom_', '')]"
               placeholder="Enter value">
+
+            <!-- Number input -->
+            <input
+              *ngIf="column.dataType === 'number'"
+              type="number"
+              [id]="'custom_' + column.id"
+              [name]="'custom_' + column.id"
+              [(ngModel)]="formData.custom_fields![column.id.replace('custom_', '')]"
+              placeholder="Enter number">
+
+            <!-- Date input -->
+            <input
+              *ngIf="column.dataType === 'date'"
+              type="date"
+              [id]="'custom_' + column.id"
+              [name]="'custom_' + column.id"
+              [(ngModel)]="formData.custom_fields![column.id.replace('custom_', '')]">
+
+            <!-- Select input -->
+            <select
+              *ngIf="column.dataType === 'select'"
+              [id]="'custom_' + column.id"
+              [name]="'custom_' + column.id"
+              [(ngModel)]="formData.custom_fields![column.id.replace('custom_', '')]">
+              <option value="">Select an option</option>
+              <option *ngFor="let option of column.selectOptions" [value]="option">
+                {{ option }}
+              </option>
+            </select>
+
+            <!-- Boolean input -->
+            <select
+              *ngIf="column.dataType === 'boolean'"
+              [id]="'custom_' + column.id"
+              [name]="'custom_' + column.id"
+              [(ngModel)]="formData.custom_fields![column.id.replace('custom_', '')]">
+              <option value="">Select...</option>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
           </div>
         </div>
       </div>

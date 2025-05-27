@@ -2,9 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
+import { TaskService } from '../../services/task.service';
 import { Project } from '../../models/project';
 import { Task } from '../../models/task';
 import { ProjectFormComponent } from '../project-form/project-form.component';
+import { TaskFormComponent } from '../../tasks/task-form/task-form.component';
+import { TaskListComponent } from '../../tasks/task-list/task-list.component';
+import { TaskPipelineComponent } from '../../tasks/task-pipeline/task-pipeline.component';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -14,7 +18,10 @@ import { FormsModule } from '@angular/forms';
     CommonModule,
     RouterModule,
     FormsModule,
-    ProjectFormComponent
+    ProjectFormComponent,
+    TaskFormComponent,
+    TaskListComponent,
+    TaskPipelineComponent
   ],
   templateUrl: './project-details.component.html',
   styleUrl: './project-details.component.scss'
@@ -25,7 +32,7 @@ export class ProjectDetailsComponent implements OnInit {
   tasks: Task[] = [];
   isLoading: boolean = true;
   errorMessage: string = '';
-  viewMode: 'list' | 'pipeline' = 'list';
+  viewMode: 'list' | 'pipeline' = 'pipeline';
   showTaskForm: boolean = false;
   selectedTask: Task | null = null;
   taskCounts: { pending: number; in_progress: number; completed: number; total: number } = {
@@ -43,7 +50,8 @@ export class ProjectDetailsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private taskService: TaskService
   ) {}
 
   ngOnInit(): void {
@@ -108,7 +116,28 @@ export class ProjectDetailsComponent implements OnInit {
   }
 
   openTaskForm(task?: Task): void {
-    this.selectedTask = task || null;
+    if (task) {
+      // Editing existing task
+      this.selectedTask = task;
+    } else {
+      // Creating new task for this project
+      this.selectedTask = {
+        id: 0,
+        user_id: 0,
+        title: '',
+        description: null,
+        status: 'pending',
+        priority: 'medium',
+        due_date: null,
+        created_at: '',
+        updated_at: '',
+        project_id: this.projectId,
+        project: this.project ? {
+          id: this.project.id,
+          name: this.project.name
+        } : undefined
+      };
+    }
     this.showTaskForm = true;
   }
 
@@ -123,7 +152,14 @@ export class ProjectDetailsComponent implements OnInit {
   }
 
   onTaskDeleted(id: number): void {
-    this.loadTasks();
+    this.taskService.deleteTask(id).subscribe({
+      next: () => {
+        this.loadTasks();
+      },
+      error: (error) => {
+        console.error('Error deleting task', error);
+      }
+    });
   }
 
   onTaskStatusChanged(task: Task): void {

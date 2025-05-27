@@ -17,7 +17,8 @@
              class="task-card"
              draggable="true"
              (dragstart)="onDragStart($event, task)"
-             (dragend)="onDragEnd()">
+             (dragend)="onDragEnd()"
+             (click)="onViewTaskDetails(task)">
 
           <div class="task-header">
             <div class="task-title">{{ task.title }}</div>
@@ -61,10 +62,10 @@
           </div>
 
           <div class="task-actions">
-            <button class="action-btn edit-btn" (click)="onEditTask(task)">
+            <button class="action-btn edit-btn" (click)="onEditTask(task); $event.stopPropagation()">
               ✏️
             </button>
-            <button class="action-btn delete-btn" (click)="onDeleteTask(task.id)">
+            <button class="action-btn delete-btn" (click)="onDeleteTask(task.id); $event.stopPropagation()">
               🗑️
             </button>
           </div>
@@ -77,4 +78,6 @@
       </div>
     </div>
   </div>
+
+
 </div>

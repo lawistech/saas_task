@@ -16,6 +16,7 @@ export class TaskPipelineComponent implements OnInit, OnChanges {
   @Output() editTask = new EventEmitter<Task>();
   @Output() deleteTask = new EventEmitter<number>();
   @Output() taskStatusChanged = new EventEmitter<Task>();
+  @Output() viewTaskDetails = new EventEmitter<Task>();
 
   groupedTasks: Record<string, Task[]> = {};
   statusLabels: Record<string, string> = {
@@ -26,6 +27,7 @@ export class TaskPipelineComponent implements OnInit, OnChanges {
 
   statusOrder: string[] = ['pending', 'in_progress', 'completed'];
   draggedTask: Task | null = null;
+  selectedTask: Task | null = null;
 
   constructor(private taskService: TaskService) {}
 
@@ -63,6 +65,24 @@ export class TaskPipelineComponent implements OnInit, OnChanges {
 
   onDeleteTask(taskId: number): void {
     this.deleteTask.emit(taskId);
+  }
+
+  onViewTaskDetails(task: Task): void {
+    // Emit event to parent component to handle unified modal
+    this.viewTaskDetails.emit(task);
+  }
+
+  closeTaskDetails(): void {
+    this.selectedTask = null;
+  }
+
+  getCustomFields(task: Task): { label: string; value: any }[] {
+    if (!task.custom_fields) return [];
+
+    return Object.entries(task.custom_fields).map(([key, value]) => ({
+      label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      value: value
+    }));
   }
 
   getStatusClass(status: string): string {

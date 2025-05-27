@@ -1,33 +1,51 @@
-// Project List Component Styles
+// Modern Project List Component Styles
 
 .project-table-wrapper {
-  position: relative;
-  width: 100%;
+  @apply relative w-full;
 }
 
-.table-controls-bar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
-  position: relative;
+.modern-table-container {
+  @apply bg-white rounded-2xl border border-gray-100 overflow-hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
 
-.column-settings-trigger {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-  background-color: white;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.table-controls {
+  @apply flex items-center justify-between px-6 py-4 border-b border-gray-100;
 
-  &:hover {
-    background-color: #f9fafb;
+  .controls-left {
+    @apply flex items-center gap-3;
+
+    .selection-badge {
+      @apply flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg;
+
+      .selection-count {
+        @apply text-sm font-semibold text-blue-700;
+      }
+
+      .selection-text {
+        @apply text-sm text-blue-600;
+      }
+
+      .clear-selection {
+        @apply w-5 h-5 flex items-center justify-center text-blue-500 hover:text-blue-700;
+        @apply hover:bg-blue-100 rounded transition-colors;
+
+        i {
+          @apply text-xs;
+        }
+      }
+    }
+  }
+
+  .controls-right {
+    .control-btn {
+      @apply flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600;
+      @apply hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors;
+
+      i {
+        @apply text-sm;
+      }
+    }
   }
 }
 
@@ -214,23 +232,89 @@
 .table-responsive-wrapper {
   width: 100%;
   overflow-x: auto;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
 }
 
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
+.table-wrapper {
+  @apply overflow-x-auto;
 }
 
-.data-row {
-  transition: background-color 0.2s;
+.modern-table {
+  @apply w-full border-collapse;
+  min-width: 800px;
 
-  &:hover {
-    background-color: #f9fafb;
+  thead {
+    @apply bg-gray-50;
+
+    tr {
+      @apply border-b border-gray-200;
+    }
+
+    th {
+      @apply py-4 px-6 text-left font-semibold text-gray-700 text-sm;
+      @apply sticky top-0 z-10;
+
+      &.checkbox-column {
+        @apply w-12 text-center;
+      }
+
+      &.actions-column {
+        @apply w-32 text-center;
+      }
+
+      &.sortable {
+        @apply cursor-pointer hover:bg-gray-100 transition-colors;
+      }
+
+      .header-content {
+        @apply flex items-center justify-between;
+
+        .header-label {
+          @apply font-medium;
+        }
+
+        .sort-indicator {
+          @apply flex flex-col ml-2;
+
+          i {
+            @apply text-xs text-gray-400 leading-none;
+
+            &.active {
+              @apply text-blue-600;
+            }
+
+            &:first-child {
+              @apply mb-0.5;
+            }
+          }
+        }
+      }
+    }
   }
 
-  &.row-selected {
-    background-color: #eef2ff;
+  tbody {
+    @apply bg-white;
+
+    .table-row {
+      @apply border-b border-gray-100 cursor-pointer transition-all duration-150;
+
+      &:hover, &.hovered {
+        @apply bg-gray-50;
+      }
+
+      &.selected {
+        @apply bg-blue-50 border-l-4 border-blue-500;
+      }
+
+      &:hover.selected {
+        @apply bg-blue-100;
+      }
+
+      &:last-child {
+        @apply border-b-0;
+      }
+    }
   }
 }
 
@@ -261,12 +345,124 @@
 
 .col-budget {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .col-actions {
-  width: auto;
-  text-align: center;
-  white-space: nowrap;
+  @apply w-auto text-center whitespace-nowrap;
+  min-width: 140px;
+
+  .action-buttons {
+    @apply flex items-center justify-center gap-1 opacity-0 transition-opacity duration-200;
+
+    &.visible {
+      @apply opacity-100;
+    }
+  }
+}
+
+// Enhanced cell styles
+.table-cell {
+  @apply py-4 px-6 text-left border-b border-gray-100 align-middle;
+}
+
+.name-cell {
+  @apply min-w-0;
+
+  .project-avatar {
+    @apply w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0;
+  }
+
+  .project-info {
+    @apply min-w-0 flex-1;
+  }
+
+  .project-name {
+    @apply font-medium text-gray-900 truncate;
+  }
+
+  .project-meta {
+    @apply flex items-center text-xs text-gray-500 mt-1;
+  }
+}
+
+.budget-cell {
+  @apply text-right font-mono;
+}
+
+.date-cell {
+  .date-info {
+    @apply space-y-1;
+  }
+
+  .date-primary {
+    @apply text-gray-900 font-medium;
+  }
+
+  .date-relative {
+    @apply text-xs text-gray-500;
+  }
+}
+
+.description-cell {
+  @apply max-w-xs;
+
+  .description-content {
+    @apply text-gray-600 text-sm leading-relaxed;
+  }
+}
+
+.priority-cell {
+  .priority-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+
+    &.priority-low {
+      @apply bg-gray-100 text-gray-800;
+    }
+
+    &.priority-medium {
+      @apply bg-yellow-100 text-yellow-800;
+    }
+
+    &.priority-high {
+      @apply bg-red-100 text-red-800;
+    }
+  }
+}
+
+.progress-cell {
+  .progress-bar-container {
+    @apply flex items-center gap-3;
+  }
+
+  .progress-bar {
+    @apply flex-1 h-2 bg-gray-200 rounded-full overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full bg-gradient-to-r from-indigo-500 to-indigo-600 transition-all duration-300;
+  }
+
+  .progress-text {
+    @apply text-xs font-medium text-gray-600 min-w-0;
+    min-width: 2.5rem;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .data-table {
+    min-width: 600px;
+    font-size: 0.8rem;
+
+    th, td {
+      padding: 0.5rem 0.75rem;
+    }
+  }
+
+  .col-actions {
+    min-width: 100px;
+  }
 }
 
 .status-indicator {
@@ -300,15 +496,137 @@
   }
 }
 
-.form-checkbox {
-  height: 1rem;
-  width: 1rem;
-  color: #4f46e5;
-  border-color: #d1d5db;
-  border-radius: 0.25rem;
+// Modern cell styles
+.table-cell {
+  @apply py-4 px-6 text-left align-middle;
 
-  &:focus {
-    ring: 2px;
-    ring-color: #4f46e5;
+  &.name-column {
+    @apply min-w-[200px];
+  }
+
+  &.status-column {
+    @apply w-32;
+  }
+
+  &.date-column {
+    @apply w-36;
+  }
+
+  &.budget-column {
+    @apply w-32 text-right;
+  }
+}
+
+.checkbox-cell, .checkbox-column {
+  .checkbox-container {
+    @apply flex items-center justify-center;
+  }
+}
+
+.modern-checkbox {
+  @apply w-4 h-4 text-blue-600 border-gray-300 rounded;
+  @apply focus:ring-2 focus:ring-blue-500 focus:ring-offset-0;
+  @apply transition-colors duration-150;
+
+  &:checked {
+    @apply bg-blue-600 border-blue-600;
+  }
+}
+
+// Cell content styles
+.name-cell {
+  .project-info {
+    .project-name {
+      @apply font-semibold text-gray-900 cursor-pointer;
+      @apply hover:text-blue-600 transition-colors;
+    }
+
+    .project-meta {
+      @apply text-sm text-gray-500 mt-1;
+    }
+  }
+}
+
+.status-cell {
+  @apply flex items-center;
+}
+
+.budget-cell {
+  .budget-value {
+    @apply font-semibold text-gray-900;
+  }
+}
+
+.date-cell {
+  .date-value {
+    @apply text-gray-700 font-medium;
+  }
+}
+
+.description-cell {
+  @apply max-w-xs;
+
+  .description-text {
+    @apply text-gray-600 truncate block;
+  }
+}
+
+.default-cell {
+  @apply text-gray-700;
+}
+
+// Actions column
+.actions-cell {
+  @apply w-32 text-center;
+
+  .action-buttons {
+    @apply flex items-center justify-center gap-1 opacity-0 transition-opacity duration-200;
+
+    &.visible {
+      @apply opacity-100;
+    }
+
+    .action-btn {
+      @apply w-8 h-8 flex items-center justify-center rounded-lg;
+      @apply text-gray-400 hover:text-gray-600 transition-colors;
+      @apply hover:bg-gray-100;
+
+      &.view-btn:hover {
+        @apply text-blue-600 bg-blue-50;
+      }
+
+      &.edit-btn:hover {
+        @apply text-green-600 bg-green-50;
+      }
+
+      &.delete-btn:hover {
+        @apply text-red-600 bg-red-50;
+      }
+
+      &:disabled {
+        @apply opacity-50 cursor-not-allowed;
+      }
+
+      i {
+        @apply text-sm;
+      }
+    }
+  }
+}
+
+// Empty state
+.empty-row {
+  @apply text-center py-12;
+
+  .empty-content {
+    @apply flex flex-col items-center gap-3 text-gray-500;
+
+    i {
+      @apply text-2xl;
+    }
+
+    span {
+      @apply text-sm font-medium;
+    }
   }
 }

@@ -1,0 +1,184 @@
+// Modern Project Grid Component Styles
+
+.modern-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
+}
+
+.modern-project-card {
+  @apply bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer;
+  @apply transition-all duration-200 ease-out;
+  @apply hover:border-gray-200 hover:shadow-lg hover:-translate-y-1;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+
+  // Minimal shadow for depth
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+}
+
+.card-header {
+  @apply p-6 pb-4;
+
+  .header-content {
+    @apply flex items-start justify-between;
+  }
+
+  .project-info {
+    @apply flex-1 min-w-0;
+
+    .project-name {
+      @apply text-lg font-semibold text-gray-900 mb-2 truncate;
+      @apply leading-tight;
+    }
+  }
+
+  .card-actions {
+    @apply flex gap-1 ml-3 opacity-0 transition-opacity duration-200;
+
+    .modern-project-card:hover & {
+      @apply opacity-100;
+    }
+
+    .action-btn {
+      @apply w-8 h-8 flex items-center justify-center rounded-lg;
+      @apply text-gray-400 hover:text-gray-600 transition-colors;
+      @apply hover:bg-gray-50;
+
+      &.edit-btn:hover {
+        @apply text-blue-600 bg-blue-50;
+      }
+
+      &.delete-btn:hover {
+        @apply text-red-600 bg-red-50;
+      }
+
+      i {
+        @apply text-sm;
+      }
+    }
+  }
+}
+
+.card-body {
+  @apply px-6 pb-4;
+
+  .progress-section {
+    @apply mb-4;
+
+    .progress-info {
+      @apply flex items-center justify-between mb-2;
+
+      .progress-label {
+        @apply text-sm font-medium text-gray-700;
+      }
+
+      .progress-value {
+        @apply text-sm font-semibold text-gray-900;
+      }
+    }
+
+    .progress-bar {
+      @apply w-full h-2 bg-gray-100 rounded-full overflow-hidden;
+
+      .progress-fill {
+        @apply h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full;
+        @apply transition-all duration-300 ease-out;
+      }
+    }
+  }
+
+  .essential-details {
+    @apply space-y-3;
+
+    .detail-row {
+      @apply flex items-center justify-between;
+
+      .detail-label {
+        @apply text-sm text-gray-500 font-medium;
+      }
+
+      .detail-value {
+        @apply text-sm text-gray-900 font-medium;
+      }
+    }
+  }
+}
+
+.card-footer {
+  @apply px-6 py-4 bg-gray-50 border-t border-gray-100;
+  @apply flex items-center justify-between;
+
+  .created-date {
+    @apply text-xs text-gray-500;
+  }
+
+  .view-btn {
+    @apply flex items-center gap-2 text-sm font-medium text-blue-600;
+    @apply hover:text-blue-700 transition-colors;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    @apply rounded-md px-2 py-1 hover:bg-blue-50;
+
+    i {
+      @apply text-xs transition-transform duration-200;
+    }
+
+    &:hover i {
+      @apply transform translate-x-1;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .modern-grid {
+    @apply grid-cols-1 gap-4;
+  }
+
+  .modern-project-card {
+    @apply mx-2;
+
+    .card-header {
+      @apply p-4 pb-3;
+
+      .project-info .project-name {
+        @apply text-base;
+      }
+    }
+
+    .card-body {
+      @apply px-4 pb-3;
+    }
+
+    .card-footer {
+      @apply px-4 py-3;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .modern-grid {
+    @apply gap-3;
+  }
+
+  .modern-project-card {
+    @apply mx-1;
+  }
+}
+
+// Animation keyframes for smooth interactions
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modern-project-card {
+  animation: slideInUp 0.3s ease-out;
+}
